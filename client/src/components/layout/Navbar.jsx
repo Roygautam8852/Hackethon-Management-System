@@ -6,14 +6,15 @@ import { useChat } from "../../context/ChatContext";
 import {
   HiOutlineMenuAlt3, HiOutlineX,
   HiOutlineUser, HiOutlineLogout, HiOutlineCog, HiOutlineChatAlt2,
+  HiOutlineCollection, HiOutlineUserGroup,
 } from "react-icons/hi";
-import { RiRocketLine } from "react-icons/ri";
+import { RiRocketLine, RiTrophyLine } from "react-icons/ri";
 import toast from "react-hot-toast";
 import GlobalChatDrawer from "../chat/GlobalChatDrawer";
 
 const navLinks = [
-  { label: "Hackathons", href: "/hackathons" },
-  { label: "Leaderboard", href: "/leaderboard" },
+  { label: "Hackathons", href: "/hackathons", icon: HiOutlineCollection, iconColor: "text-indigo-400" },
+  { label: "Leaderboard", href: "/leaderboard", icon: RiTrophyLine, iconColor: "text-amber-400" },
 ];
 
 const Navbar = () => {
@@ -137,12 +138,12 @@ const Navbar = () => {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: -8, scale: 0.96 }}
                       transition={{ duration: 0.15 }}
-                      className="absolute right-0 mt-2 w-52 rounded-xl bg-zinc-900 border border-zinc-800 shadow-2xl overflow-hidden"
+                      className="absolute right-0 mt-2 w-52 rounded-xl bg-zinc-900 border border-zinc-800 shadow-2xl overflow-hidden z-50"
                     >
                       <div className="px-3 py-2.5 border-b border-zinc-800">
                         <p className="text-xs text-zinc-500 font-medium">Signed in as</p>
                         <p className="text-sm text-zinc-200 font-semibold truncate">{user?.email}</p>
-                        <span className="badge badge-primary mt-1">{user?.role}</span>
+                        <span className="badge badge-primary mt-1 text-[9px] uppercase font-bold">{user?.role}</span>
                       </div>
                       <div className="py-1">
                         <Link
@@ -194,7 +195,7 @@ const Navbar = () => {
             {isAuthenticated && (
               <button
                 onClick={openChat}
-                className="p-2 rounded-lg text-indigo-400 bg-indigo-500/15 border border-indigo-500/30 text-xs font-bold flex items-center gap-1 cursor-pointer"
+                className="p-2 rounded-xl text-indigo-400 bg-indigo-500/15 border border-indigo-500/30 text-xs font-bold flex items-center gap-1 cursor-pointer"
               >
                 <HiOutlineChatAlt2 className="text-base" />
                 {unreadCount > 0 && (
@@ -204,9 +205,9 @@ const Navbar = () => {
             )}
 
             <button
-              className="p-2 rounded-xl text-zinc-300 hover:text-white bg-zinc-900 border border-zinc-800 transition-colors cursor-pointer"
+              className="p-2.5 rounded-xl text-zinc-200 hover:text-white bg-zinc-900 border border-zinc-800 transition-all cursor-pointer"
               onClick={() => setMobileOpen(!mobileOpen)}
-              title="Toggle Menu"
+              title="Toggle Navigation Menu"
             >
               {mobileOpen ? <HiOutlineX size={20} /> : <HiOutlineMenuAlt3 size={20} />}
             </button>
@@ -214,50 +215,101 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Animated Dropdown Menu */}
+      {/* Mobile Animated Dropdown Menu Drawer */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-[#09090b]/98 backdrop-blur-xl border-b border-[#27272a] shadow-2xl"
+            className="md:hidden bg-[#09090b]/98 backdrop-blur-2xl border-b border-[#27272a] shadow-2xl overflow-hidden"
           >
-            <div className="px-4 py-4 space-y-3">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  to={link.href}
-                  className="block px-3.5 py-2.5 rounded-xl text-zinc-200 hover:text-white hover:bg-zinc-800/80 text-sm font-semibold transition-colors"
-                >
-                  {link.label}
-                </Link>
-              ))}
+            <div className="px-4 py-5 space-y-4">
+              {/* Primary Navigation Links with Icons */}
+              <div className="space-y-1.5">
+                <p className="text-[10px] font-extrabold text-zinc-500 uppercase tracking-widest px-2 mb-1">Navigation</p>
+                {navLinks.map((link) => {
+                  const Icon = link.icon;
+                  const isActive = location.pathname.startsWith(link.href);
+                  return (
+                    <Link
+                      key={link.href}
+                      to={link.href}
+                      className={`flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-extrabold transition-all ${
+                        isActive
+                          ? "bg-zinc-800 text-white border border-zinc-700 shadow-md"
+                          : "text-zinc-300 hover:text-white bg-zinc-900/60 border border-zinc-800/80 hover:bg-zinc-800"
+                      }`}
+                    >
+                      <Icon className={`text-lg ${link.iconColor}`} />
+                      <span>{link.label}</span>
+                    </Link>
+                  );
+                })}
+              </div>
 
-              <div className="pt-3 border-t border-[#27272a] flex flex-col gap-2">
+              {/* Auth User Info & Quick Action Buttons */}
+              <div className="pt-3 border-t border-[#27272a] space-y-2.5">
                 {isAuthenticated ? (
                   <>
-                    <div className="px-3 py-2 bg-zinc-900/60 rounded-xl border border-zinc-800/80 mb-1 flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center overflow-hidden">
-                        {user?.avatar ? (
-                          <img src={user.avatar} alt={user?.name} className="w-full h-full object-cover" />
-                        ) : (
-                          <span className="text-white font-bold text-xs">{user?.name?.[0]?.toUpperCase()}</span>
-                        )}
+                    {/* User Identity Card */}
+                    <div className="px-3.5 py-3 bg-gradient-to-r from-zinc-900 to-[#111113] rounded-xl border border-zinc-800 flex items-center justify-between gap-3 shadow-md">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-9 h-9 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center overflow-hidden flex-shrink-0">
+                          {user?.avatar ? (
+                            <img src={user.avatar} alt={user?.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="text-white font-black text-xs">{user?.name?.[0]?.toUpperCase()}</span>
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-bold text-white truncate">{user?.name}</p>
+                          <p className="text-[11px] text-zinc-400 truncate">{user?.email}</p>
+                        </div>
                       </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs font-semibold text-white truncate">{user?.name}</p>
-                        <p className="text-[11px] text-zinc-400 truncate">{user?.email}</p>
+
+                      <span className="badge badge-primary text-[9px] uppercase font-extrabold flex-shrink-0">
+                        {user?.role}
+                      </span>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="space-y-2 pt-1">
+                      <Link
+                        to={getDashboardLink()}
+                        className="btn-primary text-xs py-3 w-full flex items-center justify-center gap-2 font-extrabold shadow-lg shadow-white/10 rounded-xl"
+                      >
+                        <HiOutlineCog className="text-base text-black" />
+                        <span>Go to Dashboard</span>
+                      </Link>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <Link
+                          to="/profile"
+                          className="btn-secondary text-xs py-2.5 flex items-center justify-center gap-1.5 font-bold rounded-xl"
+                        >
+                          <HiOutlineUser className="text-zinc-400 text-sm" />
+                          <span>My Profile</span>
+                        </Link>
+
+                        <button
+                          onClick={handleLogout}
+                          className="btn-danger text-xs py-2.5 flex items-center justify-center gap-1.5 font-bold rounded-xl cursor-pointer"
+                        >
+                          <HiOutlineLogout className="text-sm" />
+                          <span>Logout</span>
+                        </button>
                       </div>
                     </div>
-                    <Link to={getDashboardLink()} className="btn-primary text-center justify-center">Dashboard</Link>
-                    <Link to="/profile" className="btn-secondary text-center justify-center">My Profile</Link>
-                    <button onClick={handleLogout} className="btn-danger w-full justify-center">Logout</button>
                   </>
                 ) : (
                   <div className="grid grid-cols-2 gap-2 pt-1">
-                    <Link to="/login" className="btn-secondary text-center justify-center">Sign In</Link>
-                    <Link to="/signup" className="btn-primary text-center justify-center">Sign Up</Link>
+                    <Link to="/login" className="btn-secondary text-xs py-3 text-center justify-center font-bold rounded-xl">
+                      Sign In
+                    </Link>
+                    <Link to="/signup" className="btn-primary text-xs py-3 text-center justify-center font-bold rounded-xl">
+                      Sign Up
+                    </Link>
                   </div>
                 )}
               </div>
