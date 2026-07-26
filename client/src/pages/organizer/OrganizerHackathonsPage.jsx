@@ -97,57 +97,65 @@ const OrganizerHackathonsPage = () => {
             <Link to="/organizer/hackathons/create" className="btn-primary text-xs px-4 py-2 mt-2">Create First Hackathon</Link>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-3.5">
             {hackathons.map(h => (
-              <div key={h._id} className="card flex flex-col md:flex-row md:items-center justify-between gap-4 border-zinc-800 hover:border-zinc-700 transition-all">
+              <div key={h._id} className="card flex flex-col md:flex-row md:items-center justify-between gap-4 border-zinc-800 bg-[#0d0d0f] hover:border-zinc-700 transition-all p-4">
                 {/* Banner thumb & details */}
-                <div className="flex items-center gap-4 min-w-0">
-                  <div className="w-16 h-16 rounded-xl bg-indigo-500/10 overflow-hidden flex-shrink-0 border border-zinc-800">
+                <div className="flex items-center gap-3.5 min-w-0 flex-1">
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-indigo-500/10 overflow-hidden flex-shrink-0 border border-zinc-800">
                     {h.bannerImage
                       ? <img src={h.bannerImage} alt="" className="w-full h-full object-cover" />
                       : <div className="w-full h-full flex items-center justify-center text-xl">🏆</div>
                     }
                   </div>
 
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-bold text-white text-base truncate">{h.title}</h3>
-                      <span className="badge badge-primary capitalize text-[10px]">{h.status?.replace(/_/g, " ")}</span>
-                      {h.registrationOpen && <span className="badge badge-success text-[10px]">Reg Open</span>}
+                      <h3 className="font-bold text-white text-sm sm:text-base truncate">{h.title}</h3>
+                      <span className={`badge ${
+                        h.status === "registration_open" ? "badge-success" :
+                        h.status === "completed" ? "badge-gray" : "badge-primary"
+                      } text-[9px] font-extrabold uppercase px-2 py-0.5`}>
+                        {h.status === "registration_open" ? "REG OPEN" : h.status?.replace(/_/g, " ")}
+                      </span>
                     </div>
-                    <p className="text-xs text-zinc-400 mt-0.5">{h.theme} · {h.mode}</p>
-                    <p className="text-[11px] text-zinc-500 mt-1">
-                      {format(new Date(h.startDate), "MMM d")} — {format(new Date(h.endDate), "MMM d, yyyy")}
+                    <p className="text-xs text-zinc-400 mt-0.5 truncate">{h.theme} · {h.mode}</p>
+                    <p className="text-[11px] text-zinc-500 mt-1 truncate">
+                      {h.startDate && `${format(new Date(h.startDate), "MMM d")} — ${format(new Date(h.endDate), "MMM d, yyyy")}`}
                     </p>
                   </div>
                 </div>
 
-                {/* Actions */}
-                <div className="flex items-center gap-2 flex-shrink-0 flex-wrap self-end md:self-auto">
+                {/* Actions Toolbar */}
+                <div className="flex items-center gap-2 flex-wrap border-t md:border-t-0 border-zinc-800/80 pt-3 md:pt-0 justify-between md:justify-end">
                   <button
                     onClick={() => handleToggleReg(h._id, h.registrationOpen)}
-                    className={`btn-ghost text-xs px-2.5 py-1.5 flex items-center gap-1 border border-zinc-800 rounded-lg ${h.registrationOpen ? "text-emerald-400 hover:bg-emerald-500/10" : "text-zinc-500 hover:text-zinc-300"}`}
+                    className={`text-xs px-3 py-1.5 flex items-center gap-1.5 border rounded-xl font-semibold transition-all cursor-pointer ${
+                      h.registrationOpen
+                        ? "border-emerald-500/40 text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20"
+                        : "border-zinc-700 text-zinc-400 bg-zinc-900 hover:text-white"
+                    }`}
                     title={h.registrationOpen ? "Close Registration" : "Open Registration"}
                   >
-                    {h.registrationOpen ? <HiOutlineXCircle className="text-base" /> : <HiOutlineCheckCircle className="text-base" />}
-                    {h.registrationOpen ? "Reg Open" : "Reg Closed"}
+                    {h.registrationOpen ? <HiOutlineXCircle className="text-sm" /> : <HiOutlineCheckCircle className="text-sm" />}
+                    <span>{h.registrationOpen ? "Reg Open" : "Reg Closed"}</span>
                   </button>
 
-                  <Link to={`/organizer/hackathons/${h._id}`} className="btn-secondary text-xs px-3 py-1.5">
-                    Manage
+                  <Link to={`/organizer/hackathons/${h._id}`} className="btn-secondary text-xs px-3.5 py-1.5 font-bold cursor-pointer">
+                    Manage →
                   </Link>
 
-                  <Link to={`/hackathons/${h._id}`} target="_blank" className="p-2 text-zinc-500 hover:text-zinc-300 transition-colors">
-                    <HiOutlineExternalLink />
+                  <Link to={`/hackathons/${h._id}`} target="_blank" className="p-2 text-zinc-400 hover:text-white rounded-lg hover:bg-zinc-800 transition-colors cursor-pointer" title="Preview Public Page">
+                    <HiOutlineExternalLink className="text-base" />
                   </Link>
 
                   {/* 🗑 DELETE HACKATHON BUTTON */}
                   <button
                     onClick={() => startDeleteFlow(h)}
-                    className="btn-danger text-xs px-3 py-1.5 flex items-center gap-1"
+                    className="btn-danger text-xs px-3 py-1.5 flex items-center gap-1 cursor-pointer font-bold"
                     title="Delete Hackathon"
                   >
-                    <HiOutlineTrash /> Delete
+                    <HiOutlineTrash className="text-sm" /> Delete
                   </button>
                 </div>
               </div>

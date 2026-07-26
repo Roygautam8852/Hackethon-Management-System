@@ -70,12 +70,12 @@ const OrganizerDashboard = () => {
     <DashboardLayout>
       <div className="space-y-5 max-w-5xl">
         {/* Compact Header */}
-        <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-800 pb-3">
           <div>
             <h1 className="text-xl font-extrabold text-white">Organizer Dashboard</h1>
             <p className="text-zinc-400 text-xs mt-0.5">Welcome back, <span className="text-white font-medium">{user?.name}</span>!</p>
           </div>
-          <Link to="/organizer/hackathons/create" className="btn-primary text-xs px-3.5 py-2 flex items-center gap-1.5 font-bold">
+          <Link to="/organizer/hackathons/create" className="btn-primary text-xs px-3.5 py-2 flex items-center justify-center gap-1.5 font-bold w-full sm:w-auto">
             <HiOutlinePlus /> New Hackathon
           </Link>
         </div>
@@ -96,12 +96,12 @@ const OrganizerDashboard = () => {
         </div>
 
         {/* Compact Quick Actions */}
-        <div className="grid md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <Link to="/organizer/registrations" className="p-3.5 rounded-xl bg-[#111113] border border-zinc-800 hover:border-indigo-500/40 transition-colors flex items-center gap-3 group">
             <div className="w-8 h-8 rounded-lg bg-amber-500/15 text-amber-400 flex items-center justify-center text-sm flex-shrink-0">
               <HiOutlineUserGroup />
             </div>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <p className="text-xs font-bold text-zinc-200 group-hover:text-white transition-colors">Manage Registrations</p>
               <p className="text-[11px] text-zinc-500 truncate">Approve or reject teams</p>
             </div>
@@ -112,7 +112,7 @@ const OrganizerDashboard = () => {
             <div className="w-8 h-8 rounded-lg bg-emerald-500/15 text-emerald-400 flex items-center justify-center text-sm flex-shrink-0">
               <HiOutlineDocumentText />
             </div>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <p className="text-xs font-bold text-zinc-200 group-hover:text-white transition-colors">Review Submissions</p>
               <p className="text-[11px] text-zinc-500 truncate">Manage project entries</p>
             </div>
@@ -123,7 +123,7 @@ const OrganizerDashboard = () => {
             <div className="w-8 h-8 rounded-lg bg-violet-500/15 text-violet-400 flex items-center justify-center text-sm flex-shrink-0">
               <HiOutlinePlus />
             </div>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <p className="text-xs font-bold text-zinc-200 group-hover:text-white transition-colors">Create Hackathon</p>
               <p className="text-[11px] text-zinc-500 truncate">Launch a new event</p>
             </div>
@@ -155,41 +155,40 @@ const OrganizerDashboard = () => {
           ) : (
             <div className="divide-y divide-zinc-800/80">
               {hackathons.slice(0, 6).map(h => (
-                <div key={h._id} className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-zinc-900/50 transition-colors group">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-9 h-9 rounded-lg bg-indigo-500/10 overflow-hidden flex-shrink-0 border border-zinc-800">
+                <div key={h._id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-3.5 hover:bg-zinc-900/50 transition-colors group">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className="w-10 h-10 rounded-xl bg-indigo-500/10 overflow-hidden flex-shrink-0 border border-zinc-800">
                       {h.bannerImage
                         ? <img src={h.bannerImage} alt="" className="w-full h-full object-cover" />
-                        : <div className="w-full h-full flex items-center justify-center text-xs text-indigo-400">🏆</div>
+                        : <div className="w-full h-full flex items-center justify-center text-sm">🏆</div>
                       }
                     </div>
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <p className="text-xs font-bold text-white truncate">{h.title}</p>
-                        <span className={`badge ${statusColor[h.status] || "badge-gray"} capitalize text-[9px] px-1.5 py-0.5`}>
-                          {h.status?.replace(/_/g, " ")}
+                        <p className="text-xs sm:text-sm font-bold text-white truncate">{h.title}</p>
+                        <span className={`badge ${statusColor[h.status] || "badge-gray"} text-[9px] px-2 py-0.5 font-extrabold uppercase`}>
+                          {h.status === "registration_open" ? "REG OPEN" : h.status?.replace(/_/g, " ")}
                         </span>
-                        {h.registrationOpen && <span className="badge badge-success text-[9px] px-1.5 py-0.5">Reg Open</span>}
                       </div>
-                      <p className="text-[11px] text-zinc-500 mt-0.5 truncate">
+                      <p className="text-[11px] text-zinc-400 mt-0.5 truncate">
                         {h.mode} · {h.theme}
                         {h.startDate && ` · ${format(new Date(h.startDate), "MMM d, yyyy")}`}
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 flex-shrink-0">
+                  <div className="flex items-center justify-end gap-2 flex-shrink-0 border-t sm:border-t-0 border-zinc-800/60 pt-2 sm:pt-0">
                     <Link
                       to={`/hackathons/${h._id}`}
                       target="_blank"
-                      className="p-1.5 text-zinc-500 hover:text-zinc-300 transition-colors"
+                      className="p-1.5 text-zinc-400 hover:text-white rounded-lg hover:bg-zinc-800 transition-colors cursor-pointer"
                       title="Preview"
                     >
-                      <HiOutlineExternalLink className="text-sm" />
+                      <HiOutlineExternalLink className="text-base" />
                     </Link>
                     <Link
                       to={`/organizer/hackathons/${h._id}`}
-                      className="btn-secondary text-[11px] px-3 py-1.5 font-medium"
+                      className="btn-secondary text-xs px-3.5 py-1.5 font-bold cursor-pointer"
                     >
                       Manage →
                     </Link>
