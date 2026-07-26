@@ -55,7 +55,7 @@ const OrganizerTeamsPage = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800 pb-4">
           <div>
-            <h1 className="text-2xl font-extrabold text-white tracking-tight flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight flex items-center gap-2">
               <HiOutlineUserGroup className="text-zinc-400" /> Teams
             </h1>
             <p className="text-zinc-400 text-xs mt-1">
@@ -69,7 +69,7 @@ const OrganizerTeamsPage = () => {
           <select
             value={selectedHackathon}
             onChange={e => setSelected(e.target.value)}
-            className="input-field sm:max-w-xs text-sm"
+            className="input-field sm:max-w-xs text-xs sm:text-sm"
           >
             <option value="">Select Hackathon</option>
             {hackathons.map(h => (
@@ -83,14 +83,14 @@ const OrganizerTeamsPage = () => {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Search teams…"
-              className="input-field pl-10 text-sm"
+              className="input-field pl-10 text-xs sm:text-sm"
             />
           </div>
 
           <select
             value={statusFilter}
             onChange={e => setStatusFilter(e.target.value)}
-            className="input-field sm:max-w-[160px] text-sm"
+            className="input-field sm:max-w-[160px] text-xs sm:text-sm"
           >
             <option value="">All Statuses</option>
             <option value="pending">Pending</option>
@@ -115,64 +115,79 @@ const OrganizerTeamsPage = () => {
         ) : (
           <div className="space-y-3">
             {filtered.map(team => (
-              <div key={team._id} className="card p-0 overflow-hidden">
+              <div key={team._id} className="card p-0 overflow-hidden bg-[#0d0d0f]">
                 {/* Team row */}
                 <div
-                  className="flex items-center justify-between gap-4 px-5 py-4 cursor-pointer hover:bg-zinc-900/50 transition-colors"
+                  className="flex items-center justify-between gap-3 px-4 sm:px-5 py-3.5 sm:py-4 cursor-pointer hover:bg-zinc-900/60 transition-colors"
                   onClick={() => setExpandedTeam(expandedTeam === team._id ? null : team._id)}
                 >
-                  <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
                     <div className="w-9 h-9 rounded-xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-sm font-extrabold text-indigo-400 flex-shrink-0">
                       {team.name?.[0]?.toUpperCase()}
                     </div>
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <p className="text-sm font-bold text-white">{team.name}</p>
-                        <span className={`badge ${statusBadge[team.status] || "badge-gray"} capitalize text-[10px] font-bold`}>
+                        <p className="text-sm font-bold text-white truncate">{team.name}</p>
+                        <span className={`badge ${statusBadge[team.status] || "badge-gray"} capitalize text-[10px] font-extrabold`}>
                           {team.status}
                         </span>
                       </div>
-                      <p className="text-xs text-zinc-500 mt-0.5">
-                        Leader: <span className="text-zinc-300">{team.leader?.name}</span>
+                      <p className="text-xs text-zinc-400 mt-0.5 truncate">
+                        Leader: <span className="text-zinc-200 font-semibold">{team.leader?.name}</span>
                         {" · "}{team.members?.length || 0} member{team.members?.length !== 1 ? "s" : ""}
                         {team.createdAt && ` · Formed ${format(new Date(team.createdAt), "MMM d, yyyy")}`}
                       </p>
                     </div>
                   </div>
                   {expandedTeam === team._id
-                    ? <HiOutlineChevronUp className="text-zinc-500 flex-shrink-0" />
-                    : <HiOutlineChevronDown className="text-zinc-500 flex-shrink-0" />
+                    ? <HiOutlineChevronUp className="text-zinc-400 text-lg flex-shrink-0" />
+                    : <HiOutlineChevronDown className="text-zinc-400 text-lg flex-shrink-0" />
                   }
                 </div>
 
                 {/* Expanded member roster */}
                 {expandedTeam === team._id && (
-                  <div className="border-t border-zinc-800/80 px-5 py-4 space-y-2 bg-zinc-950/50">
-                    <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2">Member Roster</p>
-                    {team.members?.map(m => {
-                      const mu = m.user || {};
-                      const isLeader = mu._id === team.leader?._id;
-                      return (
-                        <div key={mu._id || Math.random()} className="flex items-center justify-between py-2 border-b border-zinc-800/60 last:border-0">
-                          <div className="flex items-center gap-2">
-                            <div className="w-7 h-7 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-xs font-bold text-white">
-                              {mu.name?.[0]?.toUpperCase() || "?"}
+                  <div className="border-t border-zinc-800/80 px-4 sm:px-5 py-3.5 sm:py-4 space-y-3 bg-zinc-950/70">
+                    <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Member Roster</p>
+                    <div className="space-y-2">
+                      {team.members?.map(m => {
+                        const mu = m.user || {};
+                        const isLeader = mu._id === team.leader?._id || mu._id === team.leader;
+                        const rawEmail = mu.email || "";
+                        const isPlaceholderEmail = !rawEmail || rawEmail.includes("@pending.local") || rawEmail.includes("@hacklytics.local");
+
+                        return (
+                          <div
+                            key={mu._id || Math.random()}
+                            className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2.5 sm:p-3 bg-zinc-900/90 border border-zinc-800/80 rounded-xl"
+                          >
+                            <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                              <div className="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-xs font-extrabold text-white flex-shrink-0">
+                                {mu.name?.[0]?.toUpperCase() || "?"}
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <span className="text-xs font-bold text-zinc-200">{mu.name || "Unknown"}</span>
+                                  {isLeader && <span className="badge badge-primary text-[9px] py-0.5 px-1.5 font-extrabold">Leader</span>}
+                                </div>
+                                <p className="text-[11px] text-zinc-400 mt-0.5 truncate">
+                                  {isPlaceholderEmail ? <span className="text-zinc-500 italic">No email provided</span> : rawEmail}
+                                </p>
+                              </div>
                             </div>
-                            <div>
-                              <span className="text-xs font-semibold text-zinc-200">{mu.name || "Unknown"}</span>
-                              {isLeader && <span className="ml-1.5 badge badge-primary text-[9px] py-0.5 px-1.5">Leader</span>}
-                              <p className="text-[11px] text-zinc-500">{mu.email}</p>
+
+                            <div className="flex items-center justify-end border-t sm:border-t-0 border-zinc-800/60 pt-1.5 sm:pt-0">
+                              <span className={`badge ${
+                                m.status === "accepted" ? "badge-success" :
+                                m.status === "pending"  ? "badge-warning" : "badge-danger"
+                              } text-[10px] font-bold`}>
+                                {m.status}
+                              </span>
                             </div>
                           </div>
-                          <span className={`badge ${
-                            m.status === "accepted" ? "badge-success" :
-                            m.status === "pending"  ? "badge-warning" : "badge-danger"
-                          } text-[10px]`}>
-                            {m.status}
-                          </span>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
               </div>
