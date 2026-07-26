@@ -63,14 +63,13 @@ const DashboardLayout = ({ children }) => {
           </div>
 
           <div className="flex items-center gap-2.5 sm:gap-3">
-            {/* 💬 GROUP CHAT BUTTON WITH UNREAD COUNTER BADGE */}
+            {/* 💬 GROUP CHAT BUTTON (Desktop / Laptop Only; Mobile uses Lower Bottom Navigation Bar) */}
             <button
               onClick={openChat}
-              className="relative flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-extrabold text-indigo-300 bg-indigo-500/15 border border-indigo-500/40 hover:bg-indigo-500/25 transition-all shadow-sm cursor-pointer"
+              className="hidden lg:flex relative items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-extrabold text-indigo-300 bg-indigo-500/15 border border-indigo-500/40 hover:bg-indigo-500/25 transition-all shadow-sm cursor-pointer"
             >
               <HiOutlineChatAlt2 className="text-base text-indigo-400" />
-              <span className="hidden sm:inline">💬 Group Chat</span>
-              <span className="sm:hidden font-bold">Chat</span>
+              <span>💬 Group Chat</span>
 
               {unreadCount > 0 && (
                 <span className="bg-red-500 text-white text-[10px] font-black px-1.5 py-0.2 rounded-full shadow-lg shadow-red-500/40 animate-bounce border border-red-300 ml-0.5">
