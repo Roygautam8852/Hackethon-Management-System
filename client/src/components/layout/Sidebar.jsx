@@ -72,9 +72,7 @@ const SidebarContent = ({ onClose }) => {
   const location = useLocation();
   const links = roleLinksMap[user?.role] || [];
 
-  useEffect(() => {
-    if (onClose) onClose();
-  }, [location.pathname]);
+  // NavLinks handle onClose explicitly via onClick handlers
 
   const handleLogout = async () => {
     await logout();
