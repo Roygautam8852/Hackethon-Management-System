@@ -345,7 +345,7 @@ const ManageHackathonPage = () => {
 
         {/* ── Registrations Tab ── */}
         {activeTab === "registrations" && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="card p-0 overflow-hidden">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="card p-0 overflow-x-auto">
             {registrations.length === 0 ? (
               <div className="empty-state py-12">
                 <HiOutlineUserGroup className="text-4xl text-zinc-600" />
@@ -405,7 +405,7 @@ const ManageHackathonPage = () => {
 
         {/* ── Submissions Tab ── */}
         {activeTab === "submissions" && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="card p-0 overflow-hidden">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="card p-0 overflow-x-auto">
             {submissions.length === 0 ? (
               <div className="empty-state py-12">
                 <HiOutlineDocumentText className="text-4xl text-zinc-600" />

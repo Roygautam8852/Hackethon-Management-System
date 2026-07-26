@@ -75,7 +75,7 @@ const OrganizerRegistrationsPage = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800 pb-4">
           <div>
-            <h1 className="text-2xl font-extrabold text-white tracking-tight flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight flex items-center gap-2">
               <HiOutlineUserGroup className="text-zinc-400" /> Team Registrations
             </h1>
             <p className="text-zinc-400 text-xs mt-1">
@@ -113,7 +113,7 @@ const OrganizerRegistrationsPage = () => {
           </select>
         </div>
 
-        {/* Table */}
+        {/* Content */}
         {loading ? (
           <div className="py-16 flex justify-center"><div className="spinner" /></div>
         ) : !selectedHackathon ? (
@@ -127,79 +127,137 @@ const OrganizerRegistrationsPage = () => {
             <p className="text-zinc-400 text-sm mt-2">No registrations match your filters</p>
           </div>
         ) : (
-          <div className="card p-0 overflow-hidden">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Team</th>
-                  <th>Leader</th>
-                  <th>Members</th>
-                  <th>Registered</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map(r => (
-                  <tr key={r._id}>
-                    <td className="font-semibold text-white">{r.team?.name}</td>
-                    <td>
-                      <div>
-                        <p className="text-zinc-300 text-sm">{r.team?.leader?.name}</p>
-                        <p className="text-zinc-500 text-xs">{r.team?.leader?.email}</p>
-                      </div>
-                    </td>
-                    <td className="text-zinc-400 text-sm">{r.team?.members?.length || 0}</td>
-                    <td className="text-zinc-500 text-xs">
-                      {r.registeredAt ? format(new Date(r.registeredAt), "MMM d, yyyy") : "—"}
-                    </td>
-                    <td>
-                      <span className={`badge ${badgeMap[r.status] || "badge-gray"} capitalize text-[10px] font-bold`}>
-                        {r.status}
+          <div className="space-y-4">
+            {/* Mobile Responsive Cards (< md) */}
+            <div className="grid grid-cols-1 gap-3.5 md:hidden">
+              {filtered.map((r) => (
+                <div key={r._id} className="card p-4 space-y-3 border-zinc-800 bg-[#0f0f11]">
+                  <div className="flex items-start justify-between gap-2 border-b border-zinc-800/80 pb-2.5">
+                    <div>
+                      <h3 className="text-base font-extrabold text-white">{r.team?.name || "Team"}</h3>
+                      <p className="text-[11px] text-zinc-500 mt-0.5">
+                        Registered: {r.registeredAt ? format(new Date(r.registeredAt), "MMM d, yyyy") : "Recently"}
+                      </p>
+                    </div>
+                    <span className={`badge ${badgeMap[r.status] || "badge-gray"} capitalize text-[10px] font-extrabold flex-shrink-0`}>
+                      {r.status}
+                    </span>
+                  </div>
+
+                  <div className="space-y-1.5 text-xs">
+                    <div className="flex items-center justify-between text-zinc-400">
+                      <span>Team Leader:</span>
+                      <span className="text-zinc-200 font-semibold">{r.team?.leader?.name || "N/A"}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-zinc-400">
+                      <span>Leader Email:</span>
+                      <span className="text-zinc-300 font-mono text-[11px] truncate max-w-[180px]">
+                        {r.team?.leader?.email?.includes("@pending.local") ? "No email provided" : r.team?.leader?.email || "—"}
                       </span>
-                    </td>
-                    <td>
-                      {r.status === "pending" && (
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => handleApprove(r._id)}
-                            className="btn-primary btn-sm text-xs py-1 px-2.5 flex items-center gap-1"
-                          >
-                            <HiOutlineCheckCircle /> Approve
-                          </button>
-                          <button
-                            onClick={() => { setRejectModal({ regId: r._id }); setRejectReason(""); }}
-                            className="btn-danger btn-sm text-xs py-1 px-2.5 flex items-center gap-1"
-                          >
-                            <HiOutlineXCircle /> Reject
-                          </button>
-                        </div>
-                      )}
-                    </td>
+                    </div>
+                    <div className="flex items-center justify-between text-zinc-400">
+                      <span>Total Members:</span>
+                      <span className="text-zinc-200 font-semibold">{r.team?.members?.length || 0} Members</span>
+                    </div>
+                  </div>
+
+                  {r.status === "pending" && (
+                    <div className="flex items-center gap-2 pt-2 border-t border-zinc-800/80">
+                      <button
+                        onClick={() => handleApprove(r._id)}
+                        className="btn-primary text-xs py-2 flex-1 flex items-center justify-center gap-1.5 font-bold cursor-pointer"
+                      >
+                        <HiOutlineCheckCircle className="text-sm" /> Approve Team
+                      </button>
+                      <button
+                        onClick={() => { setRejectModal({ regId: r._id }); setRejectReason(""); }}
+                        className="btn-danger text-xs py-2 flex-1 flex items-center justify-center gap-1.5 font-bold cursor-pointer"
+                      >
+                        <HiOutlineXCircle className="text-sm" /> Reject Team
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop Table View (>= md) */}
+            <div className="hidden md:block card p-0 overflow-x-auto">
+              <table className="data-table w-full">
+                <thead>
+                  <tr>
+                    <th>Team</th>
+                    <th>Leader</th>
+                    <th>Members</th>
+                    <th>Registered</th>
+                    <th>Status</th>
+                    <th>Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {filtered.map((r) => (
+                    <tr key={r._id}>
+                      <td className="font-semibold text-white">{r.team?.name}</td>
+                      <td>
+                        <div>
+                          <p className="text-zinc-300 text-sm font-semibold">{r.team?.leader?.name}</p>
+                          <p className="text-zinc-500 text-xs">
+                            {r.team?.leader?.email?.includes("@pending.local") ? "No email provided" : r.team?.leader?.email}
+                          </p>
+                        </div>
+                      </td>
+                      <td className="text-zinc-400 text-sm">{r.team?.members?.length || 0}</td>
+                      <td className="text-zinc-500 text-xs">
+                        {r.registeredAt ? format(new Date(r.registeredAt), "MMM d, yyyy") : "—"}
+                      </td>
+                      <td>
+                        <span className={`badge ${badgeMap[r.status] || "badge-gray"} capitalize text-[10px] font-bold`}>
+                          {r.status}
+                        </span>
+                      </td>
+                      <td>
+                        {r.status === "pending" && (
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => handleApprove(r._id)}
+                              className="btn-primary btn-sm text-xs py-1 px-2.5 flex items-center gap-1 cursor-pointer"
+                            >
+                              <HiOutlineCheckCircle /> Approve
+                            </button>
+                            <button
+                              onClick={() => { setRejectModal({ regId: r._id }); setRejectReason(""); }}
+                              className="btn-danger btn-sm text-xs py-1 px-2.5 flex items-center gap-1 cursor-pointer"
+                            >
+                              <HiOutlineXCircle /> Reject
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </div>
 
       {/* Reject Modal */}
       {rejectModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-          <div className="bg-[#111113] border border-zinc-800 rounded-2xl p-6 w-full max-w-md shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="bg-[#111113] border border-zinc-800 rounded-2xl p-5 sm:p-6 w-full max-w-md shadow-2xl space-y-4">
             <h3 className="text-base font-bold text-white">Reject Registration</h3>
-            <p className="text-zinc-400 text-sm">Optionally provide a reason for the team leader.</p>
+            <p className="text-zinc-400 text-xs sm:text-sm">Optionally provide a reason for the team leader.</p>
             <textarea
               value={rejectReason}
               onChange={e => setRejectReason(e.target.value)}
               rows={3}
               placeholder="e.g. Team size does not meet requirements…"
-              className="input-field resize-none text-sm"
+              className="input-field resize-none text-xs sm:text-sm"
             />
-            <div className="flex gap-3 justify-end">
-              <button onClick={() => setRejectModal(null)} className="btn-secondary text-sm px-4 py-2">Cancel</button>
-              <button onClick={handleReject} className="btn-danger text-sm px-4 py-2">Confirm Reject</button>
+            <div className="flex gap-2.5 justify-end">
+              <button onClick={() => setRejectModal(null)} className="btn-secondary text-xs sm:text-sm px-4 py-2 cursor-pointer">Cancel</button>
+              <button onClick={handleReject} className="btn-danger text-xs sm:text-sm px-4 py-2 cursor-pointer">Confirm Reject</button>
             </div>
           </div>
         </div>
