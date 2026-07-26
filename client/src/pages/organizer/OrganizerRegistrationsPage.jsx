@@ -162,18 +162,20 @@ const OrganizerRegistrationsPage = () => {
                   </div>
 
                   {r.status === "pending" && (
-                    <div className="flex items-center gap-2 pt-2 border-t border-zinc-800/80">
+                    <div className="flex items-center gap-2.5 pt-3 border-t border-zinc-800/80">
                       <button
                         onClick={() => handleApprove(r._id)}
-                        className="btn-primary text-xs py-2 flex-1 flex items-center justify-center gap-1.5 font-bold cursor-pointer"
+                        className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 min-h-[44px] rounded-xl text-xs font-extrabold text-white bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 shadow-md shadow-emerald-500/20 active:scale-95 transition-all whitespace-nowrap cursor-pointer"
                       >
-                        <HiOutlineCheckCircle className="text-sm" /> Approve Team
+                        <HiOutlineCheckCircle className="text-base flex-shrink-0" />
+                        <span>Approve Team</span>
                       </button>
                       <button
                         onClick={() => { setRejectModal({ regId: r._id }); setRejectReason(""); }}
-                        className="btn-danger text-xs py-2 flex-1 flex items-center justify-center gap-1.5 font-bold cursor-pointer"
+                        className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 min-h-[44px] rounded-xl text-xs font-extrabold text-white bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 shadow-md shadow-rose-600/20 active:scale-95 transition-all whitespace-nowrap cursor-pointer"
                       >
-                        <HiOutlineXCircle className="text-sm" /> Reject Team
+                        <HiOutlineXCircle className="text-base flex-shrink-0" />
+                        <span>Reject Team</span>
                       </button>
                     </div>
                   )}
@@ -217,18 +219,18 @@ const OrganizerRegistrationsPage = () => {
                       </td>
                       <td>
                         {r.status === "pending" && (
-                          <div className="flex gap-2">
+                          <div className="flex items-center gap-2">
                             <button
                               onClick={() => handleApprove(r._id)}
-                              className="btn-primary btn-sm text-xs py-1 px-2.5 flex items-center gap-1 cursor-pointer"
+                              className="px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 flex items-center gap-1.5 transition-all shadow-sm cursor-pointer whitespace-nowrap"
                             >
-                              <HiOutlineCheckCircle /> Approve
+                              <HiOutlineCheckCircle className="text-sm" /> Approve
                             </button>
                             <button
                               onClick={() => { setRejectModal({ regId: r._id }); setRejectReason(""); }}
-                              className="btn-danger btn-sm text-xs py-1 px-2.5 flex items-center gap-1 cursor-pointer"
+                              className="px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 flex items-center gap-1.5 transition-all shadow-sm cursor-pointer whitespace-nowrap"
                             >
-                              <HiOutlineXCircle /> Reject
+                              <HiOutlineXCircle className="text-sm" /> Reject
                             </button>
                           </div>
                         )}
