@@ -1,26 +1,37 @@
 const mongoose = require("mongoose");
 const dns = require("dns");
 
-// Ensure Node on Windows can resolve MongoDB Atlas SRV records reliably
 if (process.platform === "win32") {
   try {
     dns.setServers(["8.8.8.8", "1.1.1.1"]);
   } catch (_) {}
 }
 
-const connectDB = async () => {
-  if (mongoose.connection.readyState >= 1) {
-    return;
-  }
-  const primaryUri = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/hacklytics";
+let cachedPromise = null;
 
-  try {
-    const conn = await mongoose.connect(primaryUri, { serverSelectionTimeoutMS: 5000 });
-    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
-  } catch (error) {
-    console.error(`⚠️ MongoDB Connection Failed: ${error.message}`);
-    throw error;
+const connectDB = async () => {
+  if (mongoose.connection.readyState === 1) {
+    return mongoose.connection;
   }
+
+  if (!cachedPromise) {
+    const primaryUri = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/hacklytics";
+    const opts = {
+      serverSelectionTimeoutMS: 10000,
+      connectTimeoutMS: 10000,
+    };
+
+    cachedPromise = mongoose.connect(primaryUri, opts).then((m) => {
+      console.log(`✅ MongoDB Connected: ${m.connection.host}`);
+      return m.connection;
+    }).catch((err) => {
+      cachedPromise = null;
+      console.error(`❌ MongoDB Connection Error: ${err.message}`);
+      throw err;
+    });
+  }
+
+  return await cachedPromise;
 };
 
 module.exports = connectDB;
