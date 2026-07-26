@@ -126,13 +126,20 @@ const OrganizerHackathonsPage = () => {
                   </div>
                 </div>
 
-                {/* Actions Toolbar */}
-                <div className="flex items-center gap-2 flex-wrap border-t md:border-t-0 border-zinc-800/80 pt-3 md:pt-0 justify-between md:justify-end">
+                {/* Actions Toolbar (Symmetrical 2x2 Grid on Mobile, Row on Desktop) */}
+                <div className="grid grid-cols-2 md:flex md:items-center gap-2 border-t md:border-t-0 border-zinc-800/80 pt-3 md:pt-0">
+                  <Link
+                    to={`/organizer/hackathons/${h._id}`}
+                    className="btn-primary text-xs py-2.5 md:py-1.5 px-3 font-bold flex items-center justify-center gap-1 cursor-pointer order-1 md:order-2"
+                  >
+                    Manage →
+                  </Link>
+
                   <button
                     onClick={() => handleToggleReg(h._id, h.registrationOpen)}
-                    className={`text-xs px-3 py-1.5 flex items-center gap-1.5 border rounded-xl font-semibold transition-all cursor-pointer ${
+                    className={`text-xs py-2.5 md:py-1.5 px-3 flex items-center justify-center gap-1.5 border rounded-xl font-bold transition-all cursor-pointer order-2 md:order-1 ${
                       h.registrationOpen
-                        ? "border-emerald-500/40 text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20"
+                        ? "border-emerald-500/40 text-emerald-300 bg-emerald-500/15 hover:bg-emerald-500/25"
                         : "border-zinc-700 text-zinc-400 bg-zinc-900 hover:text-white"
                     }`}
                     title={h.registrationOpen ? "Close Registration" : "Open Registration"}
@@ -141,18 +148,18 @@ const OrganizerHackathonsPage = () => {
                     <span>{h.registrationOpen ? "Reg Open" : "Reg Closed"}</span>
                   </button>
 
-                  <Link to={`/organizer/hackathons/${h._id}`} className="btn-secondary text-xs px-3.5 py-1.5 font-bold cursor-pointer">
-                    Manage →
+                  <Link
+                    to={`/hackathons/${h._id}`}
+                    target="_blank"
+                    className="btn-secondary text-xs py-2.5 md:py-1.5 px-3 font-semibold flex items-center justify-center gap-1.5 text-zinc-300 hover:text-white cursor-pointer order-3 md:order-3"
+                    title="Preview Public Page"
+                  >
+                    <HiOutlineExternalLink className="text-sm" /> Preview
                   </Link>
 
-                  <Link to={`/hackathons/${h._id}`} target="_blank" className="p-2 text-zinc-400 hover:text-white rounded-lg hover:bg-zinc-800 transition-colors cursor-pointer" title="Preview Public Page">
-                    <HiOutlineExternalLink className="text-base" />
-                  </Link>
-
-                  {/* 🗑 DELETE HACKATHON BUTTON */}
                   <button
                     onClick={() => startDeleteFlow(h)}
-                    className="btn-danger text-xs px-3 py-1.5 flex items-center gap-1 cursor-pointer font-bold"
+                    className="btn-danger text-xs py-2.5 md:py-1.5 px-3 flex items-center justify-center gap-1.5 font-bold cursor-pointer order-4 md:order-4"
                     title="Delete Hackathon"
                   >
                     <HiOutlineTrash className="text-sm" /> Delete
