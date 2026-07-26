@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import ReactDOM from "react-dom";
 import { messageAPI } from "../../services/apiServices";
 import { useAuth } from "../../context/AuthContext";
 import toast from "react-hot-toast";
@@ -72,15 +73,15 @@ const GlobalChatDrawer = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
-  return (
+  return ReactDOM.createPortal(
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex justify-end bg-black/70 backdrop-blur-sm">
+      <div className="fixed inset-0 z-[9999] flex justify-end bg-black/75 backdrop-blur-sm">
         <motion.div
           initial={{ x: "100%" }}
           animate={{ x: 0 }}
           exit={{ x: "100%" }}
           transition={{ type: "spring", damping: 25, stiffness: 250 }}
-          className="w-full max-w-md bg-[#111113] border-l border-zinc-800 flex flex-col h-full shadow-2xl relative"
+          className="w-full max-w-md bg-[#111113] border-l border-zinc-800 flex flex-col h-full shadow-2xl relative z-[10000]"
         >
           {/* Header */}
           <div className="p-4 border-b border-zinc-800 flex items-center justify-between bg-[#0d0d0f]">
@@ -98,7 +99,7 @@ const GlobalChatDrawer = ({ isOpen, onClose }) => {
 
             <button
               onClick={onClose}
-              className="p-1.5 text-zinc-400 hover:text-white rounded-lg hover:bg-zinc-800 transition-colors"
+              className="p-1.5 text-zinc-400 hover:text-white rounded-lg hover:bg-zinc-800 transition-colors cursor-pointer"
             >
               <HiOutlineX className="text-xl" />
             </button>
@@ -128,10 +129,6 @@ const GlobalChatDrawer = ({ isOpen, onClose }) => {
                 const badge = roleBadgeStyle[msg.senderRole] || roleBadgeStyle.participant;
                 const Icon = badge.icon;
 
-                // Format sender label strictly as specified:
-                // Organizer: [ORGANIZER] Ritvik
-                // Judge: [JUDGE] Manjesh
-                // Participant: [PARTICIPANT] Team Agents (NO individual member name)
                 let displayName = "";
                 if (msg.senderRole === "participant") {
                   displayName = msg.teamName || "Participant Team";
@@ -178,14 +175,14 @@ const GlobalChatDrawer = ({ isOpen, onClose }) => {
               type="text"
               value={inputContent}
               onChange={(e) => setInputContent(e.target.value)}
-              placeholder={`Message as ${user?.role === "participant" ? "Team Member" : user?.name}...`}
+              placeholder={`Message as ${user?.role === "participant" ? "Team Member" : user?.name || "User"}...`}
               className="flex-1 bg-zinc-900 border border-zinc-700/80 focus:border-indigo-500 text-white text-xs rounded-xl px-3.5 py-2.5 outline-none transition-colors"
             />
 
             <button
               type="submit"
               disabled={!inputContent.trim() || sending}
-              className="btn-primary text-xs px-4 py-2.5 flex items-center gap-1.5 font-bold disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
+              className="btn-primary text-xs px-4 py-2.5 flex items-center gap-1.5 font-bold disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0 cursor-pointer"
             >
               <HiOutlinePaperAirplane className="rotate-90" />
               {sending ? "..." : "Send"}
@@ -194,7 +191,8 @@ const GlobalChatDrawer = ({ isOpen, onClose }) => {
 
         </motion.div>
       </div>
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 };
 
