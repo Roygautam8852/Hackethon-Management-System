@@ -1,0 +1,33 @@
+{
+  "name": "hacklytics",
+  "version": "1.0.0",
+  "description": "Hacklytics — Production SaaS Hackathon Management Platform (MERN Stack)",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "build": "cd client && npm install && npm run build",
+    "dev": "nodemon server/server.js",
+    "dev:client": "cd client && npm run dev",
+    "dev:all": "start npm run dev && start npm run dev:client"
+  },
+  "keywords": ["hackathon", "mern", "saas"],
+  "author": "Hacklytics Team",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cloudinary": "^1.41.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-async-handler": "^1.2.0",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.8.0",
+    "multer": "^2.2.0",
+    "multer-storage-cloudinary": "^4.0.0",
+    "nodemailer": "^9.0.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}

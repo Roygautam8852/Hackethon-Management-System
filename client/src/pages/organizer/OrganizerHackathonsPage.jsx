@@ -1,0 +1,248 @@
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import DashboardLayout from "../../components/layout/DashboardLayout";
+import { hackathonAPI } from "../../services/apiServices";
+import toast from "react-hot-toast";
+import { format } from "date-fns";
+import {
+  HiOutlinePlus, HiOutlineExternalLink, HiOutlineCheckCircle, HiOutlineXCircle,
+  HiOutlineTrash, HiOutlineExclamation, HiOutlineX,
+} from "react-icons/hi";
+
+const OrganizerHackathonsPage = () => {
+  const [hackathons, setHackathons] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Two-step Delete Modal state
+  const [deleteStep, setDeleteStep] = useState(0); // 0 = closed, 1 = warning, 2 = type to confirm
+  const [targetHackathon, setTargetHackathon] = useState(null);
+  const [confirmInput, setConfirmInput] = useState("");
+  const [deleting, setDeleting] = useState(false);
+
+  const fetch = async () => {
+    setLoading(true);
+    hackathonAPI.getMy()
+      .then(r => setHackathons(r.data.data.hackathons || []))
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => { fetch(); }, []);
+
+  const handleToggleReg = async (id, open) => {
+    try {
+      await hackathonAPI.toggleRegistration(id);
+      toast.success(open ? "Registration closed" : "Registration opened");
+      fetch();
+    } catch (e) {
+      toast.error(e.response?.data?.message || "Failed");
+    }
+  };
+
+  // Start 2-step deletion
+  const startDeleteFlow = (hackathon) => {
+    setTargetHackathon(hackathon);
+    setDeleteStep(1);
+    setConfirmInput("");
+  };
+
+  const closeDeleteFlow = () => {
+    setDeleteStep(0);
+    setTargetHackathon(null);
+    setConfirmInput("");
+    setDeleting(false);
+  };
+
+  // Execute deletion after 2nd confirmation
+  const executeDelete = async () => {
+    if (!targetHackathon) return;
+    if (confirmInput.trim() !== targetHackathon.title.trim()) {
+      toast.error(`Please type exact hackathon name "${targetHackathon.title}" to confirm`);
+      return;
+    }
+
+    setDeleting(true);
+    try {
+      await hackathonAPI.delete(targetHackathon._id);
+      toast.success(`"${targetHackathon.title}" and all related data purged successfully!`);
+      closeDeleteFlow();
+      fetch();
+    } catch (e) {
+      toast.error(e.response?.data?.message || "Failed to delete hackathon");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  return (
+    <DashboardLayout>
+      <div className="space-y-6 max-w-5xl">
+        <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-100">My Hackathons</h1>
+            <p className="text-slate-400 text-xs mt-0.5">{hackathons.length} hackathon{hackathons.length !== 1 ? "s" : ""}</p>
+          </div>
+          <Link to="/organizer/hackathons/create" className="btn-primary text-xs px-4 py-2.5 flex items-center gap-1.5">
+            <HiOutlinePlus /> New Hackathon
+          </Link>
+        </div>
+
+        {loading ? (
+          <div className="grid md:grid-cols-2 gap-4">
+            {[1, 2, 3].map(i => <div key={i} className="skeleton h-40 rounded-xl" />)}
+          </div>
+        ) : hackathons.length === 0 ? (
+          <div className="empty-state py-16 card">
+            <p className="text-zinc-400 text-sm">No hackathons created yet</p>
+            <Link to="/organizer/hackathons/create" className="btn-primary text-xs px-4 py-2 mt-2">Create First Hackathon</Link>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {hackathons.map(h => (
+              <div key={h._id} className="card flex flex-col md:flex-row md:items-center justify-between gap-4 border-zinc-800 hover:border-zinc-700 transition-all">
+                {/* Banner thumb & details */}
+                <div className="flex items-center gap-4 min-w-0">
+                  <div className="w-16 h-16 rounded-xl bg-indigo-500/10 overflow-hidden flex-shrink-0 border border-zinc-800">
+                    {h.bannerImage
+                      ? <img src={h.bannerImage} alt="" className="w-full h-full object-cover" />
+                      : <div className="w-full h-full flex items-center justify-center text-xl">🏆</div>
+                    }
+                  </div>
+
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="font-bold text-white text-base truncate">{h.title}</h3>
+                      <span className="badge badge-primary capitalize text-[10px]">{h.status?.replace(/_/g, " ")}</span>
+                      {h.registrationOpen && <span className="badge badge-success text-[10px]">Reg Open</span>}
+                    </div>
+                    <p className="text-xs text-zinc-400 mt-0.5">{h.theme} · {h.mode}</p>
+                    <p className="text-[11px] text-zinc-500 mt-1">
+                      {format(new Date(h.startDate), "MMM d")} — {format(new Date(h.endDate), "MMM d, yyyy")}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center gap-2 flex-shrink-0 flex-wrap self-end md:self-auto">
+                  <button
+                    onClick={() => handleToggleReg(h._id, h.registrationOpen)}
+                    className={`btn-ghost text-xs px-2.5 py-1.5 flex items-center gap-1 border border-zinc-800 rounded-lg ${h.registrationOpen ? "text-emerald-400 hover:bg-emerald-500/10" : "text-zinc-500 hover:text-zinc-300"}`}
+                    title={h.registrationOpen ? "Close Registration" : "Open Registration"}
+                  >
+                    {h.registrationOpen ? <HiOutlineXCircle className="text-base" /> : <HiOutlineCheckCircle className="text-base" />}
+                    {h.registrationOpen ? "Reg Open" : "Reg Closed"}
+                  </button>
+
+                  <Link to={`/organizer/hackathons/${h._id}`} className="btn-secondary text-xs px-3 py-1.5">
+                    Manage
+                  </Link>
+
+                  <Link to={`/hackathons/${h._id}`} target="_blank" className="p-2 text-zinc-500 hover:text-zinc-300 transition-colors">
+                    <HiOutlineExternalLink />
+                  </Link>
+
+                  {/* 🗑 DELETE HACKATHON BUTTON */}
+                  <button
+                    onClick={() => startDeleteFlow(h)}
+                    className="btn-danger text-xs px-3 py-1.5 flex items-center gap-1"
+                    title="Delete Hackathon"
+                  >
+                    <HiOutlineTrash /> Delete
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ── TWO-STEP DELETE CONFIRMATION MODAL ── */}
+        {deleteStep > 0 && targetHackathon && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
+            <div className="bg-[#111113] border border-red-500/40 rounded-2xl p-6 w-full max-w-md shadow-2xl space-y-4 relative">
+              
+              <button onClick={closeDeleteFlow} className="absolute top-4 right-4 text-zinc-500 hover:text-white p-1">
+                <HiOutlineX />
+              </button>
+
+              {/* STEP 1: WARNING CONFIRMATION */}
+              {deleteStep === 1 && (
+                <div className="space-y-4">
+                  <div className="w-12 h-12 rounded-2xl bg-red-500/20 text-red-400 border border-red-500/30 flex items-center justify-center text-2xl mx-auto">
+                    <HiOutlineExclamation />
+                  </div>
+
+                  <div className="text-center space-y-1">
+                    <h3 className="text-lg font-black text-white">Delete Hackathon?</h3>
+                    <p className="text-xs text-red-400 font-bold uppercase tracking-wider">Step 1 of 2: First Confirmation</p>
+                  </div>
+
+                  <div className="bg-red-500/10 border border-red-500/30 p-4 rounded-xl text-xs text-zinc-300 space-y-2">
+                    <p className="font-semibold text-white">Are you sure you want to delete <span className="text-red-400">"{targetHackathon.title}"</span>?</p>
+                    <p className="text-zinc-400">
+                      This will permanently purge this hackathon and all associated registrations, team submissions, leaderboard scores, and judge evaluations.
+                    </p>
+                  </div>
+
+                  <div className="flex gap-3 justify-end pt-2 border-t border-zinc-800">
+                    <button onClick={closeDeleteFlow} className="btn-secondary text-xs px-4 py-2">
+                      Cancel
+                    </button>
+                    <button
+                      onClick={() => setDeleteStep(2)}
+                      className="btn-danger text-xs px-4 py-2 font-bold"
+                    >
+                      Yes, Proceed to Final Confirm →
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* STEP 2: TYPE TITLE TO CONFIRM */}
+              {deleteStep === 2 && (
+                <div className="space-y-4">
+                  <div className="w-12 h-12 rounded-2xl bg-red-600/30 text-red-300 border border-red-500 flex items-center justify-center text-2xl mx-auto shadow-lg shadow-red-500/20">
+                    <HiOutlineTrash />
+                  </div>
+
+                  <div className="text-center space-y-1">
+                    <h3 className="text-lg font-black text-white">Final Confirmation Required</h3>
+                    <p className="text-xs text-red-400 font-bold uppercase tracking-wider">Step 2 of 2: Permanent Purge</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <p className="text-xs text-zinc-300">
+                      To confirm deletion, please type the exact title <strong className="text-amber-400">{targetHackathon.title}</strong> below:
+                    </p>
+                    <input
+                      type="text"
+                      value={confirmInput}
+                      onChange={e => setConfirmInput(e.target.value)}
+                      placeholder={`Type "${targetHackathon.title}"...`}
+                      className="input-field text-sm border-red-500/40 focus:border-red-500 font-semibold"
+                    />
+                  </div>
+
+                  <div className="flex gap-3 justify-end pt-2 border-t border-zinc-800">
+                    <button onClick={closeDeleteFlow} className="btn-secondary text-xs px-4 py-2">
+                      Cancel
+                    </button>
+                    <button
+                      onClick={executeDelete}
+                      disabled={confirmInput.trim() !== targetHackathon.title.trim() || deleting}
+                      className="btn-danger text-xs px-4 py-2 font-bold disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
+                    >
+                      {deleting ? "Purging Data..." : "PERMANENTLY DELETE HACKATHON"}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+            </div>
+          </div>
+        )}
+      </div>
+    </DashboardLayout>
+  );
+};
+
+export default OrganizerHackathonsPage;
