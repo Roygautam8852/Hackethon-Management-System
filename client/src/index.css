@@ -3,6 +3,7 @@
 /* =========================================================
    HACKLYTICS — Vercel / Linear Premium Monochrome Palette
    High-Contrast Black, Pure White & Light Grey SaaS Theme
+   Mobile Native App-Like Responsive Enhancements
    ========================================================= */
 
 @theme {
@@ -31,11 +32,13 @@
 /* Base resets */
 *, *::before, *::after {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
 html {
   scroll-behavior: smooth;
   color-scheme: dark;
+  height: 100%;
 }
 
 body {
@@ -45,6 +48,8 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 /* Webkit Autofill Override */
@@ -85,7 +90,7 @@ select:-webkit-autofill:active {
   height: 0 !important;
 }
 
-::selection { background: rgba(255, 255, 255, 0.25); color: #fff; }
+::-selection { background: rgba(255, 255, 255, 0.25); color: #fff; }
 
 /* Components & Utilities */
 
@@ -107,7 +112,7 @@ select:-webkit-autofill:active {
   background: #111113;
   border: 1px solid #27272a;
   border-radius: 1rem;
-  padding: 1.5rem;
+  padding: clamp(1rem, 3.5vw, 1.5rem);
   box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.8);
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -122,7 +127,7 @@ select:-webkit-autofill:active {
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 1rem;
-  padding: 1.5rem;
+  padding: clamp(1rem, 3.5vw, 1.5rem);
 }
 
 /* Vercel Style High-Contrast Primary Button */
@@ -132,6 +137,7 @@ select:-webkit-autofill:active {
   justify-content: center;
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
+  min-height: 44px;
   background: #ffffff;
   color: #000000;
   font-weight: 700;
@@ -159,6 +165,7 @@ select:-webkit-autofill:active {
   justify-content: center;
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
+  min-height: 44px;
   background: #18181b;
   color: #fafafa;
   font-weight: 600;
@@ -183,6 +190,7 @@ select:-webkit-autofill:active {
   justify-content: center;
   gap: 0.5rem;
   padding: 0.625rem 1.25rem;
+  min-height: 44px;
   background: transparent;
   color: #a1a1aa;
   font-weight: 500;
@@ -205,6 +213,7 @@ select:-webkit-autofill:active {
   justify-content: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
+  min-height: 40px;
   background: rgba(239, 68, 68, 0.12);
   color: #fca5a5;
   font-weight: 600;
@@ -218,6 +227,7 @@ select:-webkit-autofill:active {
 
 .btn-sm {
   padding: 0.45rem 1rem;
+  min-height: 38px;
   font-size: 0.8125rem;
 }
 
@@ -225,6 +235,7 @@ select:-webkit-autofill:active {
 .input-field {
   width: 100%;
   padding: 0.75rem 1rem;
+  min-height: 44px;
   background: #0e0e10;
   border: 1px solid #27272a;
   border-radius: 0.625rem;
@@ -305,7 +316,7 @@ select:-webkit-autofill:active {
 }
 
 .section-title {
-  font-size: clamp(1.5rem, 3.5vw, 2.25rem);
+  font-size: clamp(1.35rem, 4vw, 2.25rem);
   font-weight: 700;
   line-height: 1.2;
   color: #ffffff;
@@ -314,7 +325,7 @@ select:-webkit-autofill:active {
 
 .section-subtitle {
   margin-top: 0.625rem;
-  font-size: 0.975rem;
+  font-size: clamp(0.85rem, 2.5vw, 0.975rem);
   color: #a1a1aa;
   max-width: 38rem;
   line-height: 1.5;
@@ -325,7 +336,7 @@ select:-webkit-autofill:active {
   background: #111113;
   border: 1px solid #27272a;
   border-radius: 1rem;
-  padding: 1.35rem;
+  padding: clamp(1rem, 3vw, 1.35rem);
   position: relative;
   overflow: hidden;
   transition: all 0.2s ease;
@@ -339,13 +350,22 @@ select:-webkit-autofill:active {
   background: linear-gradient(90deg, #ffffff, #a1a1aa);
 }
 
+/* Table Responsive Wrapper */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 0.75rem;
+}
+
 /* Table */
 .data-table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 600px; /* Ensures tables render clearly with horizontal scroll on mobile */
 }
 .data-table th {
-  padding: 0.875rem 1.25rem;
+  padding: 0.875rem 1rem;
   text-align: left;
   font-size: 0.725rem;
   font-weight: 700;
@@ -354,12 +374,14 @@ select:-webkit-autofill:active {
   color: #71717a;
   background: #09090b;
   border-bottom: 1px solid #27272a;
+  white-space: nowrap;
 }
 .data-table td {
-  padding: 1rem 1.25rem;
+  padding: 0.875rem 1rem;
   font-size: 0.875rem;
   color: #d4d4d8;
   border-bottom: 1px solid #18181b;
+  white-space: nowrap;
 }
 .data-table tr:hover td { background: rgba(255, 255, 255, 0.04); }
 .data-table tr:last-child td { border-bottom: none; }
@@ -370,7 +392,7 @@ select:-webkit-autofill:active {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 4rem 2rem;
+  padding: 3rem 1.5rem;
   text-align: center;
   gap: 1rem;
   color: #71717a;

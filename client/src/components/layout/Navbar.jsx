@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../../context/AuthContext";
 import { useChat } from "../../context/ChatContext";
 import {
-  HiOutlineMenuAlt3, HiOutlineX, HiOutlineChevronDown,
+  HiOutlineMenuAlt3, HiOutlineX,
   HiOutlineUser, HiOutlineLogout, HiOutlineCog, HiOutlineChatAlt2,
 } from "react-icons/hi";
 import { RiRocketLine } from "react-icons/ri";
@@ -58,7 +58,7 @@ const Navbar = () => {
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
           ? "bg-[#09090b]/95 backdrop-blur-md border-b border-[#27272a] shadow-2xl"
-          : "bg-transparent"
+          : "bg-[#050505]/80 backdrop-blur-sm sm:bg-transparent"
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -75,7 +75,6 @@ const Navbar = () => {
 
           {/* Right Desktop Nav & Auth Buttons */}
           <div className="hidden md:flex items-center gap-2.5">
-            {/* Hackathons Button */}
             <Link
               to="/hackathons"
               className={`px-4 py-2 text-sm font-semibold rounded-lg border transition-all ${
@@ -87,7 +86,6 @@ const Navbar = () => {
               Hackathons
             </Link>
 
-            {/* Leaderboard Button */}
             <Link
               to="/leaderboard"
               className={`px-4 py-2 text-sm font-semibold rounded-lg border transition-all ${
@@ -99,7 +97,7 @@ const Navbar = () => {
               Leaderboard
             </Link>
 
-            {/* 💬 TOP GLOBAL GROUP CHAT BUTTON WITH UNREAD COUNTER BADGE */}
+            {/* 💬 GROUP CHAT BUTTON */}
             {isAuthenticated && (
               <button
                 onClick={openChat}
@@ -163,7 +161,7 @@ const Navbar = () => {
                         </Link>
                         <button
                           onClick={handleLogout}
-                          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors"
+                          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer"
                         >
                           <HiOutlineLogout />
                           Logout
@@ -191,45 +189,75 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* Mobile Toggle */}
-          <button
-            className="md:hidden p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
-            onClick={() => setMobileOpen(!mobileOpen)}
-          >
-            {mobileOpen ? <HiOutlineX size={20} /> : <HiOutlineMenuAlt3 size={20} />}
-          </button>
+          {/* Mobile Right Controls */}
+          <div className="flex md:hidden items-center gap-2">
+            {isAuthenticated && (
+              <button
+                onClick={openChat}
+                className="p-2 rounded-lg text-indigo-400 bg-indigo-500/15 border border-indigo-500/30 text-xs font-bold flex items-center gap-1 cursor-pointer"
+              >
+                <HiOutlineChatAlt2 className="text-base" />
+                {unreadCount > 0 && (
+                  <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
+                )}
+              </button>
+            )}
+
+            <button
+              className="p-2 rounded-xl text-zinc-300 hover:text-white bg-zinc-900 border border-zinc-800 transition-colors cursor-pointer"
+              onClick={() => setMobileOpen(!mobileOpen)}
+              title="Toggle Menu"
+            >
+              {mobileOpen ? <HiOutlineX size={20} /> : <HiOutlineMenuAlt3 size={20} />}
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Mobile Menu */}
+      {/* Mobile Animated Dropdown Menu */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-slate-900/98 backdrop-blur-md border-t border-slate-800"
+            className="md:hidden bg-[#09090b]/98 backdrop-blur-xl border-b border-[#27272a] shadow-2xl"
           >
-            <div className="px-4 py-4 space-y-2">
+            <div className="px-4 py-4 space-y-3">
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
                   to={link.href}
-                  className="block px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 text-sm font-medium transition-colors"
+                  className="block px-3.5 py-2.5 rounded-xl text-zinc-200 hover:text-white hover:bg-zinc-800/80 text-sm font-semibold transition-colors"
                 >
                   {link.label}
                 </Link>
               ))}
-              <div className="pt-2 border-t border-slate-800 flex flex-col gap-2">
+
+              <div className="pt-3 border-t border-[#27272a] flex flex-col gap-2">
                 {isAuthenticated ? (
                   <>
-                    <Link to={getDashboardLink()} className="btn-secondary btn-sm text-center">Dashboard</Link>
-                    <button onClick={handleLogout} className="btn-danger btn-sm">Logout</button>
+                    <div className="px-3 py-2 bg-zinc-900/60 rounded-xl border border-zinc-800/80 mb-1 flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center overflow-hidden">
+                        {user?.avatar ? (
+                          <img src={user.avatar} alt={user?.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-white font-bold text-xs">{user?.name?.[0]?.toUpperCase()}</span>
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-semibold text-white truncate">{user?.name}</p>
+                        <p className="text-[11px] text-zinc-400 truncate">{user?.email}</p>
+                      </div>
+                    </div>
+                    <Link to={getDashboardLink()} className="btn-primary text-center justify-center">Dashboard</Link>
+                    <Link to="/profile" className="btn-secondary text-center justify-center">My Profile</Link>
+                    <button onClick={handleLogout} className="btn-danger w-full justify-center">Logout</button>
                   </>
                 ) : (
                   <div className="grid grid-cols-2 gap-2 pt-1">
-                    <Link to="/login" className="btn-secondary btn-sm text-center justify-center">Sign In</Link>
-                    <Link to="/signup" className="btn-primary btn-sm text-center justify-center">Sign Up</Link>
+                    <Link to="/login" className="btn-secondary text-center justify-center">Sign In</Link>
+                    <Link to="/signup" className="btn-primary text-center justify-center">Sign Up</Link>
                   </div>
                 )}
               </div>
