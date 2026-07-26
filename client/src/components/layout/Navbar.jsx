@@ -108,7 +108,7 @@ const Navbar = () => {
                 <span>💬 Group Chat</span>
 
                 {unreadCount > 0 && (
-                  <span className="bg-red-500 text-white text-[10px] font-black px-1.5 py-0.2 rounded-full shadow-lg shadow-red-500/40 animate-bounce border border-red-300 ml-0.5">
+                  <span className="bg-red-600 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full border border-red-500 ml-0.5">
                     {unreadCount}
                   </span>
                 )}
@@ -199,7 +199,9 @@ const Navbar = () => {
               >
                 <HiOutlineChatAlt2 className="text-base" />
                 {unreadCount > 0 && (
-                  <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
+                  <span className="bg-red-600 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full border border-red-500">
+                    {unreadCount}
+                  </span>
                 )}
               </button>
             )}
