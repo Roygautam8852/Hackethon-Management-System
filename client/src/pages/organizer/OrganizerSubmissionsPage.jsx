@@ -170,11 +170,11 @@ const OrganizerSubmissionsPage = () => {
                     </div>
 
                     {/* Status control */}
-                    <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 flex-shrink-0 w-full sm:w-auto border-t sm:border-t-0 border-zinc-800/80 pt-2 sm:pt-0">
                       <select
                         value={s.status}
                         onChange={e => handleStatusChange(s._id, e.target.value)}
-                        className="text-xs bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-zinc-300 focus:outline-none focus:border-indigo-500"
+                        className="text-xs bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5 text-zinc-200 focus:outline-none focus:border-indigo-500 flex-1 sm:flex-initial min-h-[44px]"
                       >
                         <option value="pending">Pending</option>
                         <option value="under_review">Under Review</option>
@@ -184,10 +184,10 @@ const OrganizerSubmissionsPage = () => {
 
                       <button
                         onClick={() => openAssignModal(s)}
-                        className="btn-secondary text-xs px-3 py-2 flex items-center gap-1.5"
+                        className="btn-secondary text-xs px-3.5 py-2.5 flex-1 sm:flex-initial flex items-center justify-center gap-1.5 min-h-[44px] cursor-pointer font-bold"
                         title="Assign Judges to this Submission"
                       >
-                        <HiOutlineUserAdd className="text-indigo-400" />
+                        <HiOutlineUserAdd className="text-indigo-400 text-sm" />
                         Assign Judges ({assignedList.length})
                       </button>
                     </div>

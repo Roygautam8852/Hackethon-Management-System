@@ -113,28 +113,28 @@ const JudgeProjectsPage = () => {
                       <p className="text-emerald-400 font-semibold mt-2">All submissions reviewed! 🎉</p>
                     </div>
                   ) : (
-                    <div className="space-y-2">
+                    <div className="space-y-2.5">
                       {data.pending?.map(sub => (
                         <motion.div
                           key={sub._id}
                           initial={{ opacity: 0, x: -10 }}
                           animate={{ opacity: 1, x: 0 }}
-                          className="card flex items-center justify-between gap-4"
+                          className="card flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-4 bg-[#0d0d0f]"
                         >
-                          <div className="min-w-0">
-                            <p className="font-semibold text-white text-sm truncate">{sub.projectName}</p>
-                            <p className="text-xs text-zinc-500 mt-0.5">
-                              Team: <span className="text-zinc-300">{sub.team?.name}</span>
+                          <div className="min-w-0 flex-1">
+                            <p className="font-bold text-white text-sm sm:text-base truncate">{sub.projectName}</p>
+                            <p className="text-xs text-zinc-400 mt-0.5 truncate">
+                              Team: <span className="text-zinc-200 font-semibold">{sub.team?.name}</span>
                               {sub.techStack?.length > 0 && (
-                                <span className="ml-2 text-zinc-600">· {sub.techStack.slice(0, 3).join(", ")}</span>
+                                <span className="ml-2 text-zinc-500">· {sub.techStack.slice(0, 3).join(", ")}</span>
                               )}
                             </p>
                           </div>
                           <Link
                             to={`/judge/projects/${sub._id}/review?hackathon=${selectedHackathon}`}
-                            className="btn-primary text-xs px-4 py-2 flex items-center gap-1.5 flex-shrink-0"
+                            className="btn-primary text-xs py-2.5 px-4 flex items-center justify-center gap-1.5 w-full sm:w-auto font-bold flex-shrink-0 cursor-pointer"
                           >
-                            <HiOutlinePencil /> Score
+                            <HiOutlinePencil /> Score Submission
                           </Link>
                         </motion.div>
                       ))}
@@ -152,14 +152,14 @@ const JudgeProjectsPage = () => {
                     </h3>
                     <div className="space-y-2">
                       {data.completed.map(rev => (
-                        <div key={rev._id} className="card flex items-center justify-between gap-4 opacity-80">
-                          <div className="min-w-0">
-                            <p className="font-semibold text-white text-sm">Score: {rev.totalScore} pts</p>
-                            <p className="text-xs text-zinc-500 truncate max-w-xs mt-0.5">
+                        <div key={rev._id} className="card flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3.5 sm:p-4 bg-[#0d0d0f] opacity-80">
+                          <div className="min-w-0 flex-1">
+                            <p className="font-bold text-white text-sm">Score: <span className="text-emerald-400">{rev.totalScore} pts</span></p>
+                            <p className="text-xs text-zinc-400 truncate max-w-sm mt-0.5">
                               {rev.feedback || "No written feedback"}
                             </p>
                           </div>
-                          <span className="badge badge-success text-[10px] flex-shrink-0">Reviewed ✓</span>
+                          <span className="badge badge-success text-[10px] flex-shrink-0 self-start sm:self-auto">Reviewed ✓</span>
                         </div>
                       ))}
                     </div>
