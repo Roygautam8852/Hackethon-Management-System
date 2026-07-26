@@ -145,11 +145,11 @@ const ParticipantTeamPage = () => {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6 max-w-3xl mx-auto">
+      <div className="space-y-6 max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800 pb-4">
           <div>
-            <h1 className="text-2xl font-extrabold text-white tracking-tight flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight flex items-center gap-2">
               <HiOutlineUserGroup className="text-zinc-400" /> My Hackathon Team
             </h1>
             <p className="text-zinc-400 text-xs mt-1">Create, join, or manage team members for your hackathons</p>
@@ -157,7 +157,7 @@ const ParticipantTeamPage = () => {
 
           <Link
             to="/hackathons"
-            className="btn-secondary text-xs px-3.5 py-2 flex items-center gap-1.5 self-start sm:self-auto"
+            className="btn-secondary text-xs px-3.5 py-2 flex items-center justify-center gap-1.5 w-full sm:w-auto"
           >
             Browse Hackathons →
           </Link>
@@ -192,11 +192,11 @@ const ParticipantTeamPage = () => {
                         {" · "}Leader: <span className="text-zinc-200">{invite.leader?.name}</span>
                       </p>
                     </div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="flex items-center gap-2 flex-shrink-0 w-full sm:w-auto justify-end">
                       <button
                         onClick={() => handleRespondInvitation(invite._id, "accept")}
                         disabled={!!respondingId}
-                        className="btn-primary text-xs px-3 py-1.5 flex items-center gap-1"
+                        className="btn-primary text-xs px-3 py-1.5 flex items-center gap-1 flex-1 sm:flex-initial justify-center"
                       >
                         <HiOutlineCheckCircle />
                         {respondingId === invite._id + "accept" ? "Joining..." : "Accept"}
@@ -204,7 +204,7 @@ const ParticipantTeamPage = () => {
                       <button
                         onClick={() => handleRespondInvitation(invite._id, "reject")}
                         disabled={!!respondingId}
-                        className="btn-danger text-xs px-3 py-1.5"
+                        className="btn-danger text-xs px-3 py-1.5 flex-1 sm:flex-initial justify-center"
                       >
                         {respondingId === invite._id + "reject" ? "..." : "Decline"}
                       </button>
@@ -216,8 +216,8 @@ const ParticipantTeamPage = () => {
           )}
         </AnimatePresence>
 
-        {/* Hackathon Selector */}
-        <div className="card bg-[#0d0d0f] border-zinc-800">
+        {/* Hackathon Selector Card */}
+        <div className="card bg-[#0d0d0f] border-zinc-800 space-y-2">
           <label className="input-label text-xs">Target Hackathon Event</label>
           <select
             value={selectedHackathon}
@@ -248,10 +248,10 @@ const ParticipantTeamPage = () => {
             >
               {/* Main Team Info Header Card */}
               <div className="card space-y-4">
-                <div className="flex items-start justify-between gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-800/80 pb-3.5">
                   <div>
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h2 className="text-xl font-extrabold text-white tracking-tight">{team.name}</h2>
+                      <h2 className="text-lg sm:text-xl font-extrabold text-white tracking-tight">{team.name}</h2>
                       <span
                         className={`badge ${
                           team.status === "approved"
@@ -266,21 +266,21 @@ const ParticipantTeamPage = () => {
                         {team.status === "forming" ? "REGISTERED" : team.status}
                       </span>
                     </div>
-                    <p className="text-zinc-500 text-xs mt-1">
-                      Event: <span className="text-zinc-300 font-semibold">{team.hackathon?.title || "Hackathon"}</span>
+                    <p className="text-zinc-400 text-xs mt-1">
+                      Event: <span className="text-zinc-200 font-semibold">{team.hackathon?.title || "Hackathon"}</span>
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <button
                       onClick={copyTeamId}
-                      className="btn-secondary text-xs px-3 py-1.5 flex items-center gap-1.5"
+                      className="btn-secondary text-xs px-3 py-1.5 flex items-center justify-center gap-1.5 flex-1 sm:flex-initial"
                       title="Copy Team ID"
                     >
                       <HiOutlineDuplicate /> Team ID
                     </button>
                     {!isLeader && (
-                      <button onClick={handleLeave} className="btn-danger text-xs px-3 py-1.5 flex items-center gap-1.5">
+                      <button onClick={handleLeave} className="btn-danger text-xs px-3 py-1.5 flex items-center justify-center gap-1.5 flex-1 sm:flex-initial">
                         <HiOutlineLogout /> Leave Team
                       </button>
                     )}
@@ -288,60 +288,62 @@ const ParticipantTeamPage = () => {
                 </div>
 
                 {/* Roster & Members */}
-                <div className="space-y-2 pt-2 border-t border-zinc-800/80">
-                  <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">Team Roster</p>
-                  {team.members?.map((m) => {
-                    const memberUser = m.user || {};
-                    const isTeamLeader = memberUser._id === team.leader?._id || memberUser._id === team.leader;
+                <div className="space-y-3 pt-1">
+                  <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Team Roster</p>
+                  <div className="space-y-2">
+                    {team.members?.map((m) => {
+                      const memberUser = m.user || {};
+                      const isTeamLeader = memberUser._id === team.leader?._id || memberUser._id === team.leader;
 
-                    return (
-                      <div
-                        key={memberUser._id || Math.random()}
-                        className="flex items-center justify-between p-3 bg-zinc-900/90 border border-zinc-800/80 rounded-xl"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-xs font-extrabold text-white flex-shrink-0">
-                            {memberUser.name?.[0]?.toUpperCase() || "?"}
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <p className="text-xs font-semibold text-zinc-200">{memberUser.name || "Teammate"}</p>
-                              {isTeamLeader && <span className="badge badge-primary text-[9px] px-1.5 py-0.5">Leader</span>}
+                      return (
+                        <div
+                          key={memberUser._id || Math.random()}
+                          className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:p-3.5 bg-zinc-900/90 border border-zinc-800/80 rounded-xl"
+                        >
+                          <div className="flex items-center gap-3 min-w-0 flex-1">
+                            <div className="w-9 h-9 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-xs font-extrabold text-white flex-shrink-0">
+                              {memberUser.name?.[0]?.toUpperCase() || "?"}
                             </div>
-                            <p className="text-[11px] text-zinc-500">{memberUser.email || "No email listed"}</p>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <p className="text-xs font-bold text-zinc-200">{memberUser.name || "Teammate"}</p>
+                                {isTeamLeader && <span className="badge badge-primary text-[9px] px-1.5 py-0.5 font-extrabold">Leader</span>}
+                              </div>
+                              <p className="text-[11px] text-zinc-400 truncate">{memberUser.email || "No email listed"}</p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-between sm:justify-end gap-2.5 border-t sm:border-t-0 border-zinc-800/60 pt-2 sm:pt-0">
+                            <span
+                              className={`badge text-[10px] ${
+                                m.status === "accepted"
+                                  ? "badge-success"
+                                  : m.status === "pending"
+                                  ? "badge-warning"
+                                  : "badge-danger"
+                              }`}
+                            >
+                              {m.status === "accepted" ? (
+                                <span className="flex items-center gap-1"><HiOutlineCheckCircle /> Member</span>
+                              ) : (
+                                <span className="flex items-center gap-1"><HiOutlineClock /> Invited</span>
+                              )}
+                            </span>
+
+                            {isLeader && memberUser._id !== user?._id && (
+                              <button
+                                onClick={() => handleRemoveMember(memberUser._id)}
+                                className="text-red-400 hover:text-red-300 p-1.5 rounded-lg hover:bg-red-500/10 transition-colors cursor-pointer"
+                                title="Remove member"
+                              >
+                                <HiOutlineTrash className="text-base" />
+                              </button>
+                            )}
                           </div>
                         </div>
-
-                        <div className="flex items-center gap-3">
-                          <span
-                            className={`badge text-[10px] ${
-                              m.status === "accepted"
-                                ? "badge-success"
-                                : m.status === "pending"
-                                ? "badge-warning"
-                                : "badge-danger"
-                            }`}
-                          >
-                            {m.status === "accepted" ? (
-                              <span className="flex items-center gap-1"><HiOutlineCheckCircle /> Member</span>
-                            ) : (
-                              <span className="flex items-center gap-1"><HiOutlineClock /> Invited</span>
-                            )}
-                          </span>
-
-                          {isLeader && memberUser._id !== user?._id && (
-                            <button
-                              onClick={() => handleRemoveMember(memberUser._id)}
-                              className="text-red-400 hover:text-red-300 p-1.5 rounded-lg hover:bg-red-500/10 transition-colors"
-                              title="Remove member"
-                            >
-                              <HiOutlineTrash className="text-base" />
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
 
@@ -352,24 +354,24 @@ const ParticipantTeamPage = () => {
                     <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
                       <HiOutlineUserAdd className="text-zinc-400" /> Add Team Member
                     </h3>
-                    <p className="text-xs text-zinc-500 mt-0.5">
+                    <p className="text-xs text-zinc-400 mt-0.5">
                       Fill out your teammate's name and email address below to add them to your roster.
                     </p>
                   </div>
 
                   <form onSubmit={handleAddMember} className="space-y-3">
-                    <div className="grid sm:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {/* Teammate Full Name */}
                       <div>
                         <label className="input-label text-[11px] mb-1">Teammate Full Name</label>
-                        <div className="relative">
-                          <HiOutlineUser className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 text-base pointer-events-none z-10" />
+                        <div className="relative flex items-center">
+                          <HiOutlineUser className="absolute left-3 text-zinc-400 text-base pointer-events-none z-10" />
                           <input
                             type="text"
                             value={memberName}
                             onChange={(e) => setMemberName(e.target.value)}
                             placeholder="e.g. vivek or Aryan Sharma"
-                            className="input-field bg-[#0d0d0f] border-zinc-800 focus:border-zinc-500 text-xs pl-10"
+                            className="input-field input-with-icon-left bg-[#0d0d0f] border-zinc-800 focus:border-zinc-500 text-xs"
                           />
                         </div>
                       </div>
@@ -377,14 +379,14 @@ const ParticipantTeamPage = () => {
                       {/* Teammate Email Address */}
                       <div>
                         <label className="input-label text-[11px] mb-1">Teammate Email Address (Optional)</label>
-                        <div className="relative">
-                          <HiOutlineMail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 text-base pointer-events-none z-10" />
+                        <div className="relative flex items-center">
+                          <HiOutlineMail className="absolute left-3 text-zinc-400 text-base pointer-events-none z-10" />
                           <input
                             type="email"
                             value={memberEmail}
                             onChange={(e) => setMemberEmail(e.target.value)}
                             placeholder="e.g. vivek@gmail.com (Optional)"
-                            className="input-field bg-[#0d0d0f] border-zinc-800 focus:border-zinc-500 text-xs pl-10"
+                            className="input-field input-with-icon-left bg-[#0d0d0f] border-zinc-800 focus:border-zinc-500 text-xs"
                           />
                         </div>
                       </div>
@@ -393,14 +395,14 @@ const ParticipantTeamPage = () => {
                     {/* Skills / Tech Stack (Optional) */}
                     <div>
                       <label className="input-label text-[11px] mb-1">Skills / Tech Stack (Optional)</label>
-                      <div className="relative">
-                        <HiOutlineCode className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 text-base pointer-events-none z-10" />
+                      <div className="relative flex items-center">
+                        <HiOutlineCode className="absolute left-3 text-zinc-400 text-base pointer-events-none z-10" />
                         <input
                           type="text"
                           value={memberSkills}
                           onChange={(e) => setMemberSkills(e.target.value)}
                           placeholder="e.g. React, Python, Machine Learning"
-                          className="input-field bg-[#0d0d0f] border-zinc-800 focus:border-zinc-500 text-xs pl-10"
+                          className="input-field input-with-icon-left bg-[#0d0d0f] border-zinc-800 focus:border-zinc-500 text-xs"
                         />
                       </div>
                     </div>
@@ -408,7 +410,7 @@ const ParticipantTeamPage = () => {
                     <button
                       type="submit"
                       disabled={inviting || (!memberName.trim() && !memberEmail.trim())}
-                      className="btn-primary text-xs py-2.5 px-6 flex items-center justify-center gap-1.5"
+                      className="btn-primary text-xs py-2.5 px-6 w-full sm:w-auto flex items-center justify-center gap-1.5"
                     >
                       {inviting ? "Adding Teammate..." : <><HiOutlineUserAdd className="text-sm" /> Add Teammate</>}
                     </button>
@@ -444,7 +446,7 @@ const ParticipantTeamPage = () => {
                   />
                 </div>
 
-                <button type="submit" disabled={creating} className="btn-primary text-xs py-2.5 px-5">
+                <button type="submit" disabled={creating} className="btn-primary text-xs py-2.5 px-5 w-full sm:w-auto justify-center">
                   {creating ? "Creating Team..." : <><HiOutlinePlus className="text-sm" /> Launch Team</>}
                 </button>
               </form>
