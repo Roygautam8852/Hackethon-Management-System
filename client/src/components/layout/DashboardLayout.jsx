@@ -7,9 +7,8 @@ import { useAuth } from "../../context/AuthContext";
 import { motion } from "framer-motion";
 import {
   HiOutlineHome, HiOutlineChatAlt2, HiOutlineMenuAlt2,
-  HiOutlineCollection, HiOutlineUser, HiOutlineSparkles,
+  HiOutlineCollection, HiOutlineUser,
 } from "react-icons/hi";
-import { RiRocketLine } from "react-icons/ri";
 
 const roleDashboards = {
   admin: "/admin",
@@ -19,8 +18,8 @@ const roleDashboards = {
 };
 
 /**
- * Mobile Native App-Like Responsive Dashboard Layout
- * Supports Desktop Fixed Sidebar + Mobile Slide-Over Drawer + Mobile Bottom Navigation Bar
+ * Universal Responsive SaaS Dashboard Layout
+ * Pixel-Perfect for Desktop / Laptop Screens + Mobile Native App Experience
  */
 const DashboardLayout = ({ children }) => {
   const { user } = useAuth();
@@ -31,21 +30,21 @@ const DashboardLayout = ({ children }) => {
   const userDashboard = roleDashboards[user?.role] || "/";
 
   return (
-    <div className="flex min-h-screen bg-[#050505]">
-      {/* Sidebar Component (Desktop fixed & Mobile slide drawer) */}
+    <div className="min-h-screen bg-[#050505] text-zinc-100 flex relative overflow-x-hidden">
+      {/* Sidebar Component (Desktop Fixed 256px & Mobile Slide Drawer) */}
       <Sidebar isMobileOpen={mobileNavOpen} onMobileClose={() => setMobileNavOpen(false)} />
 
-      {/* Main Content Area */}
+      {/* Main Workspace Canvas */}
       <motion.main
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.2 }}
-        className="flex-1 ml-0 lg:ml-64 min-h-screen overflow-x-hidden flex flex-col"
+        className="flex-1 lg:pl-64 min-h-screen flex flex-col w-full min-w-0"
       >
-        {/* Sticky Header Bar (Desktop & Mobile) */}
-        <header className="sticky top-0 z-30 bg-[#09090b]/95 backdrop-blur-md border-b border-[#27272a] px-4 sm:px-6 py-3 flex items-center justify-between">
+        {/* Desktop & Mobile Sticky Header Bar */}
+        <header className="sticky top-0 z-30 bg-[#09090b]/95 backdrop-blur-xl border-b border-[#27272a] px-4 sm:px-8 py-3.5 flex items-center justify-between shadow-lg shadow-black/20">
           <div className="flex items-center gap-3">
-            {/* Mobile Menu Hamburger Button */}
+            {/* Mobile Menu Hamburger Toggle (Visible only on screens < lg) */}
             <button
               onClick={() => setMobileNavOpen(true)}
               className="lg:hidden p-2 rounded-xl text-zinc-300 hover:text-white bg-zinc-900 border border-zinc-800 hover:border-zinc-700 transition-all cursor-pointer"
@@ -54,27 +53,24 @@ const DashboardLayout = ({ children }) => {
               <HiOutlineMenuAlt2 className="text-lg" />
             </button>
 
-            {/* Mobile Brand / Workspace Identifier */}
+            {/* Status & Panel Breadcrumb Indicator */}
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider hidden sm:inline">
-                Dashboard Workspace
-              </span>
-              <span className="text-xs font-extrabold text-white sm:hidden tracking-tight">
-                Hack<span className="text-zinc-400">lytics</span>
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-sm shadow-emerald-400/50" />
+              <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest">
+                Workspace Panel
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-2.5 sm:gap-3">
             {/* 💬 GROUP CHAT BUTTON WITH UNREAD COUNTER BADGE */}
             <button
               onClick={openChat}
-              className="relative flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-xl text-xs font-extrabold text-indigo-300 bg-indigo-500/15 border border-indigo-500/40 hover:bg-indigo-500/25 transition-all shadow-sm cursor-pointer"
+              className="relative flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-extrabold text-indigo-300 bg-indigo-500/15 border border-indigo-500/40 hover:bg-indigo-500/25 transition-all shadow-sm cursor-pointer"
             >
               <HiOutlineChatAlt2 className="text-base text-indigo-400" />
               <span className="hidden sm:inline">💬 Group Chat</span>
-              <span className="sm:hidden font-semibold">Chat</span>
+              <span className="sm:hidden font-bold">Chat</span>
 
               {unreadCount > 0 && (
                 <span className="bg-red-500 text-white text-[10px] font-black px-1.5 py-0.2 rounded-full shadow-lg shadow-red-500/40 animate-bounce border border-red-300 ml-0.5">
@@ -83,10 +79,10 @@ const DashboardLayout = ({ children }) => {
               )}
             </button>
 
-            {/* Home Link */}
+            {/* Back to Home Button */}
             <Link
               to="/"
-              className="flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-xl text-xs font-semibold text-zinc-300 hover:text-white bg-zinc-900 border border-zinc-800 hover:border-zinc-700 transition-all shadow-sm"
+              className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold text-zinc-300 hover:text-white bg-zinc-900 border border-zinc-800 hover:border-zinc-700 transition-all shadow-sm"
             >
               <HiOutlineHome className="text-sm text-zinc-400" />
               <span className="hidden sm:inline">← Back to Home</span>
@@ -96,11 +92,11 @@ const DashboardLayout = ({ children }) => {
         </header>
 
         {/* Dashboard Main Content Body */}
-        <div className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full pb-24 lg:pb-8">
+        <div className="flex-1 p-4 sm:p-8 lg:p-10 w-full max-w-[1600px] mx-auto pb-24 lg:pb-12">
           {children}
         </div>
 
-        {/* Mobile Bottom App Bar (One-Thumb Quick Access on Phones) */}
+        {/* Mobile Bottom App Bar (One-Thumb Quick Access on Phones < lg) */}
         <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#09090b]/95 backdrop-blur-xl border-t border-[#27272a] px-3 py-2 flex items-center justify-around shadow-2xl">
           <Link
             to={userDashboard}

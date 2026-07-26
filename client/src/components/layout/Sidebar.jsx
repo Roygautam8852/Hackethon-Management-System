@@ -202,7 +202,7 @@ const Sidebar = ({ isMobileOpen, onMobileClose }) => {
   return (
     <>
       {/* Desktop Fixed Sidebar */}
-      <aside className="hidden lg:flex w-64 min-h-screen bg-[#09090b] border-r border-[#27272a] flex-col fixed left-0 top-0 z-40">
+      <aside className="hidden lg:flex w-64 h-screen bg-[#09090b] border-r border-[#27272a] flex-col fixed left-0 top-0 bottom-0 z-40">
         <SidebarContent />
       </aside>
 
