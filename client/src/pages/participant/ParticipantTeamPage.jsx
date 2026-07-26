@@ -7,7 +7,7 @@ import toast from "react-hot-toast";
 import {
   HiOutlinePlus, HiOutlineUserAdd, HiOutlineTrash, HiOutlineLogout,
   HiOutlineUserGroup, HiOutlineMail, HiOutlineCheckCircle, HiOutlineClock,
-  HiOutlineDuplicate, HiOutlineBell, HiOutlineUser, HiOutlineCode,
+  HiOutlineDuplicate, HiOutlineBell, HiOutlineUser, HiOutlineCode, HiOutlinePencilAlt,
 } from "react-icons/hi";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -27,6 +27,11 @@ const ParticipantTeamPage = () => {
   const [inviting, setInviting] = useState(false);
   const [pendingInvites, setPendingInvites] = useState([]);
   const [respondingId, setRespondingId] = useState(null);
+
+  // Edit teammate email inline state
+  const [editingMemberId, setEditingMemberId] = useState(null);
+  const [editingEmail, setEditingEmail] = useState("");
+  const [savingEmail, setSavingEmail] = useState(false);
 
   // Fetch pending invitations on mount
   useEffect(() => {
@@ -120,6 +125,32 @@ const ParticipantTeamPage = () => {
       setTeam(res.data.data.team);
     } catch (e) {
       toast.error(e.response?.data?.message || "Failed to remove member");
+    }
+  };
+
+  const startEditEmail = (memberUser) => {
+    setEditingMemberId(memberUser._id);
+    const raw = memberUser.email || "";
+    const isPlaceholder = !raw || raw.includes("@pending.local") || raw.includes("@hacklytics.local");
+    setEditingEmail(isPlaceholder ? "" : raw);
+  };
+
+  const handleSaveMemberEmail = async (memberUserId) => {
+    if (!editingEmail.trim() || !editingEmail.includes("@")) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+    setSavingEmail(true);
+    try {
+      const res = await teamAPI.updateMemberEmail(team._id, memberUserId, editingEmail.trim());
+      toast.success("Teammate email updated successfully!");
+      setTeam(res.data.data.team);
+      setEditingMemberId(null);
+      setEditingEmail("");
+    } catch (e) {
+      toast.error(e.response?.data?.message || "Failed to update email");
+    } finally {
+      setSavingEmail(false);
     }
   };
 
@@ -274,13 +305,13 @@ const ParticipantTeamPage = () => {
                   <div className="flex items-center gap-2 flex-wrap">
                     <button
                       onClick={copyTeamId}
-                      className="btn-secondary text-xs px-3 py-1.5 flex items-center justify-center gap-1.5 flex-1 sm:flex-initial"
+                      className="btn-secondary text-xs px-3 py-1.5 flex items-center justify-center gap-1.5 flex-1 sm:flex-initial cursor-pointer"
                       title="Copy Team ID"
                     >
                       <HiOutlineDuplicate /> Team ID
                     </button>
                     {!isLeader && (
-                      <button onClick={handleLeave} className="btn-danger text-xs px-3 py-1.5 flex items-center justify-center gap-1.5 flex-1 sm:flex-initial">
+                      <button onClick={handleLeave} className="btn-danger text-xs px-3 py-1.5 flex items-center justify-center gap-1.5 flex-1 sm:flex-initial cursor-pointer">
                         <HiOutlineLogout /> Leave Team
                       </button>
                     )}
@@ -290,26 +321,75 @@ const ParticipantTeamPage = () => {
                 {/* Roster & Members */}
                 <div className="space-y-3 pt-1">
                   <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Team Roster</p>
-                  <div className="space-y-2">
+                  <div className="space-y-2.5">
                     {team.members?.map((m) => {
                       const memberUser = m.user || {};
                       const isTeamLeader = memberUser._id === team.leader?._id || memberUser._id === team.leader;
+                      const rawEmail = memberUser.email || "";
+                      const isPlaceholderEmail = !rawEmail || rawEmail.includes("@pending.local") || rawEmail.includes("@hacklytics.local");
+                      const isEditing = editingMemberId === memberUser._id;
+                      const canEditEmail = isLeader || memberUser._id === user?._id;
 
                       return (
                         <div
                           key={memberUser._id || Math.random()}
                           className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:p-3.5 bg-zinc-900/90 border border-zinc-800/80 rounded-xl"
                         >
-                          <div className="flex items-center gap-3 min-w-0 flex-1">
-                            <div className="w-9 h-9 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-xs font-extrabold text-white flex-shrink-0">
+                          <div className="flex items-start sm:items-center gap-3 min-w-0 flex-1">
+                            <div className="w-9 h-9 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-xs font-extrabold text-white flex-shrink-0 mt-0.5 sm:mt-0">
                               {memberUser.name?.[0]?.toUpperCase() || "?"}
                             </div>
-                            <div className="min-w-0 flex-1">
+                            <div className="min-w-0 flex-1 space-y-1">
                               <div className="flex items-center gap-2 flex-wrap">
                                 <p className="text-xs font-bold text-zinc-200">{memberUser.name || "Teammate"}</p>
                                 {isTeamLeader && <span className="badge badge-primary text-[9px] px-1.5 py-0.5 font-extrabold">Leader</span>}
                               </div>
-                              <p className="text-[11px] text-zinc-400 truncate">{memberUser.email || "No email listed"}</p>
+
+                              {/* Inline Email Display & Edit Mode */}
+                              {isEditing ? (
+                                <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
+                                  <input
+                                    type="email"
+                                    value={editingEmail}
+                                    onChange={(e) => setEditingEmail(e.target.value)}
+                                    placeholder="Enter teammate's real email"
+                                    className="bg-[#0d0d0f] border border-indigo-500/80 text-white text-xs rounded-lg px-2.5 py-1 outline-none min-w-[210px]"
+                                    autoFocus
+                                  />
+                                  <button
+                                    onClick={() => handleSaveMemberEmail(memberUser._id)}
+                                    disabled={savingEmail}
+                                    className="btn-primary text-[11px] px-2.5 py-1 min-h-[30px] font-bold cursor-pointer"
+                                  >
+                                    {savingEmail ? "Saving..." : "Save"}
+                                  </button>
+                                  <button
+                                    onClick={() => setEditingMemberId(null)}
+                                    className="btn-ghost text-[11px] px-2 py-1 min-h-[30px] text-zinc-400 cursor-pointer"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  {isPlaceholderEmail ? (
+                                    <span className="text-zinc-500 italic text-[11px]">No email provided</span>
+                                  ) : (
+                                    <span className="text-zinc-300 text-[11px] font-mono truncate max-w-[220px] sm:max-w-xs">{rawEmail}</span>
+                                  )}
+
+                                  {canEditEmail && (
+                                    <button
+                                      onClick={() => startEditEmail(memberUser)}
+                                      className="text-indigo-300 hover:text-white text-[10px] font-bold px-2 py-0.5 rounded-md bg-indigo-500/15 border border-indigo-500/30 hover:bg-indigo-500/25 transition-all flex items-center gap-1 cursor-pointer"
+                                      title="Provide or edit teammate's real email address"
+                                    >
+                                      <HiOutlinePencilAlt className="text-xs text-indigo-400" />
+                                      {isPlaceholderEmail ? "Add Email" : "Edit Email"}
+                                    </button>
+                                  )}
+                                </div>
+                              )}
                             </div>
                           </div>
 
@@ -355,7 +435,7 @@ const ParticipantTeamPage = () => {
                       <HiOutlineUserAdd className="text-zinc-400" /> Add Team Member
                     </h3>
                     <p className="text-xs text-zinc-400 mt-0.5">
-                      Fill out your teammate's name and email address below to add them to your roster.
+                      Fill out your teammate's name. Email is optional — if not provided now, you can add their real email anytime using the "Add Email" option!
                     </p>
                   </div>
 
@@ -370,7 +450,7 @@ const ParticipantTeamPage = () => {
                             type="text"
                             value={memberName}
                             onChange={(e) => setMemberName(e.target.value)}
-                            placeholder="e.g. vivek or Aryan Sharma"
+                            placeholder="e.g. Raju or Aryan Sharma"
                             className="input-field input-with-icon-left bg-[#0d0d0f] border-zinc-800 focus:border-zinc-500 text-xs"
                           />
                         </div>
@@ -385,7 +465,7 @@ const ParticipantTeamPage = () => {
                             type="email"
                             value={memberEmail}
                             onChange={(e) => setMemberEmail(e.target.value)}
-                            placeholder="e.g. vivek@gmail.com (Optional)"
+                            placeholder="e.g. raju@gmail.com (Optional)"
                             className="input-field input-with-icon-left bg-[#0d0d0f] border-zinc-800 focus:border-zinc-500 text-xs"
                           />
                         </div>
@@ -410,7 +490,7 @@ const ParticipantTeamPage = () => {
                     <button
                       type="submit"
                       disabled={inviting || (!memberName.trim() && !memberEmail.trim())}
-                      className="btn-primary text-xs py-2.5 px-6 w-full sm:w-auto flex items-center justify-center gap-1.5"
+                      className="btn-primary text-xs py-2.5 px-6 w-full sm:w-auto flex items-center justify-center gap-1.5 cursor-pointer"
                     >
                       {inviting ? "Adding Teammate..." : <><HiOutlineUserAdd className="text-sm" /> Add Teammate</>}
                     </button>
@@ -446,7 +526,7 @@ const ParticipantTeamPage = () => {
                   />
                 </div>
 
-                <button type="submit" disabled={creating} className="btn-primary text-xs py-2.5 px-5 w-full sm:w-auto justify-center">
+                <button type="submit" disabled={creating} className="btn-primary text-xs py-2.5 px-5 w-full sm:w-auto justify-center cursor-pointer">
                   {creating ? "Creating Team..." : <><HiOutlinePlus className="text-sm" /> Launch Team</>}
                 </button>
               </form>

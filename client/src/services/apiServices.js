@@ -49,6 +49,7 @@ export const teamAPI = {
   update: (id, data) => api.put(`/teams/${id}`, data),
   invite: (id, data) => api.post(`/teams/${id}/invite`, data),
   respondInvitation: (id, action) => api.patch(`/teams/${id}/invitation`, { action }),
+  updateMemberEmail: (id, userId, email) => api.patch(`/teams/${id}/members/${userId}/email`, { email }),
   removeMember: (id, userId) => api.delete(`/teams/${id}/members/${userId}`),
   transferLeader: (id, newLeaderId) => api.patch(`/teams/${id}/transfer-leader`, { newLeaderId }),
   leave: (id) => api.delete(`/teams/${id}/leave`),

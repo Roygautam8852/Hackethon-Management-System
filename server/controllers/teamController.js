@@ -169,7 +169,7 @@ const inviteMember = asyncHandler(async (req, res) => {
   if (!targetUser) {
     const finalEmail = inputEmail 
       ? inputEmail.toLowerCase() 
-      : `${inputName.toLowerCase().replace(/[^a-z0-9]/g, "")}@hacklytics.local`;
+      : `${inputName.toLowerCase().replace(/[^a-z0-9]/g, "")}_${Date.now()}@pending.local`;
 
     const finalName = inputName 
       ? inputName 
@@ -405,6 +405,47 @@ const getAllTeams = asyncHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, { teams }, "All teams fetched"));
 });
 
+// @desc    Update a team member's real email address
+// @route   PATCH /api/teams/:id/members/:userId/email
+// @access  Participant (Leader or Self)
+const updateMemberEmail = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+  if (!email || !email.includes("@")) {
+    throw new ApiError(400, "Please enter a valid email address");
+  }
+
+  const team = await Team.findById(req.params.id);
+  if (!team) throw new ApiError(404, "Team not found");
+
+  const isLeader = team.leader.toString() === req.user._id.toString();
+  const isSelf = req.params.userId === req.user._id.toString();
+
+  if (!isLeader && !isSelf) {
+    throw new ApiError(403, "Only team leader or member can update email address");
+  }
+
+  const memberUser = await User.findById(req.params.userId);
+  if (!memberUser) throw new ApiError(404, "Member not found");
+
+  const targetEmail = email.trim().toLowerCase();
+
+  // Check if email belongs to another registered user
+  const existingUser = await User.findOne({ email: targetEmail, _id: { $ne: memberUser._id } });
+  if (existingUser) {
+    throw new ApiError(409, "An account with this email address already exists");
+  }
+
+  memberUser.email = targetEmail;
+  await memberUser.save();
+
+  await team.populate([
+    { path: "leader", select: "name avatar email" },
+    { path: "members.user", select: "name avatar email skills" },
+  ]);
+
+  res.status(200).json(new ApiResponse(200, { team }, "Team member email updated successfully"));
+});
+
 module.exports = {
   createTeam,
   getTeamsByHackathon,
@@ -419,4 +460,5 @@ module.exports = {
   getMyTeam,
   getMyPendingInvitations,
   getAllTeams,
+  updateMemberEmail,
 };

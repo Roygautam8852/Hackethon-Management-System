@@ -3,7 +3,7 @@ const router = express.Router();
 const {
   createTeam, getTeamsByHackathon, getTeamById, updateTeam,
   inviteMember, respondToInvitation, removeMember, transferLeader,
-  leaveTeam, deleteTeam, getMyTeam, getMyPendingInvitations, getAllTeams,
+  leaveTeam, deleteTeam, getMyTeam, getMyPendingInvitations, getAllTeams, updateMemberEmail,
 } = require("../controllers/teamController");
 const { protect } = require("../middleware/auth");
 const { authorizeRoles } = require("../middleware/role");
@@ -19,6 +19,7 @@ router.get("/:id", getTeamById);
 router.put("/:id", authorizeRoles("participant"), updateTeam);
 router.post("/:id/invite", authorizeRoles("participant"), inviteMember);
 router.patch("/:id/invitation", authorizeRoles("participant"), respondToInvitation);
+router.patch("/:id/members/:userId/email", authorizeRoles("participant"), updateMemberEmail);
 router.delete("/:id/members/:userId", authorizeRoles("participant"), removeMember);
 router.patch("/:id/transfer-leader", authorizeRoles("participant"), transferLeader);
 router.delete("/:id/leave", authorizeRoles("participant"), leaveTeam);
