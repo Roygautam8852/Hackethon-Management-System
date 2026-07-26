@@ -30,8 +30,13 @@ const LoginPage = () => {
 
   const getRoleRedirect = (role) => {
     const map = { admin: "/admin", organizer: "/organizer", participant: "/participant", judge: "/judge" };
-    const invalidFrom = !from || ["/unauthorized", "/login", "/signup"].includes(from);
-    return invalidFrom ? (map[role] || "/") : from;
+    const targetDashboard = map[role] || "/";
+    if (!from || ["/unauthorized", "/login", "/signup"].includes(from)) {
+      return targetDashboard;
+    }
+    // If previous location belongs to a different role's dashboard area, redirect straight to user's own dashboard
+    const isOtherRoleRoute = Object.entries(map).some(([r, prefix]) => r !== role && from.startsWith(prefix));
+    return isOtherRoleRoute ? targetDashboard : from;
   };
 
   const onSubmit = async (data) => {
