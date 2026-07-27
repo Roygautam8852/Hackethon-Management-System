@@ -174,11 +174,11 @@ const ChatPage = () => {
 
   return (
     <DashboardLayout>
-      <div className="h-[calc(100vh-6rem)] bg-[#09090b] border border-zinc-800 rounded-2xl overflow-hidden flex shadow-2xl">
+      <div className="-mx-4 -my-4 sm:mx-0 sm:my-0 h-[calc(100vh-8.5rem)] sm:h-[calc(100vh-8rem)] lg:h-[calc(100vh-6.5rem)] bg-[#09090b] border-0 sm:border border-zinc-800/80 rounded-none sm:rounded-2xl overflow-hidden flex shadow-2xl">
         {/* LEFT SIDEBAR: CONTACTS LIST (WhatsApp Style) */}
-        <div className={`w-full md:w-80 lg:w-96 border-r border-zinc-800 flex-col bg-[#0c0c0e] flex-shrink-0 ${activeContact ? "hidden md:flex" : "flex"}`}>
+        <div className={`w-full md:w-80 lg:w-96 border-r border-zinc-800/80 flex-col bg-[#0c0c0e] flex-shrink-0 ${activeContact ? "hidden md:flex" : "flex"}`}>
           {/* Header */}
-          <div className="p-3.5 border-b border-zinc-800 flex items-center justify-between bg-[#111113]">
+          <div className="p-3.5 border-b border-zinc-800/80 flex items-center justify-between bg-[#111113]">
             <div className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-full bg-indigo-500/20 border border-indigo-500/30 text-indigo-400 flex items-center justify-center font-bold text-sm overflow-hidden">
                 {user?.avatar ? <img src={user.avatar} alt="" className="w-full h-full object-cover" /> : user?.name?.[0]?.toUpperCase()}
@@ -190,7 +190,7 @@ const ChatPage = () => {
             </div>
             <button
               onClick={fetchContacts}
-              className="p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
+              className="p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
               title="Refresh Contacts"
             >
               <HiOutlineRefresh className="text-sm" />
@@ -308,44 +308,54 @@ const ChatPage = () => {
           {activeContact ? (
             <>
               {/* Active Chat Header */}
-              <div className="px-4 sm:px-5 py-3.5 border-b border-zinc-800 bg-[#0f0f12] flex items-center justify-between shadow-md">
+              <div className="px-3.5 sm:px-5 py-3 border-b border-zinc-800/80 bg-[#0c0c0e] flex items-center justify-between shadow-md z-10">
                 <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
                   <button
                     onClick={() => setActiveContact(null)}
-                    className="md:hidden p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors flex items-center gap-1 text-xs font-bold mr-1 flex-shrink-0 cursor-pointer"
+                    className="md:hidden w-8 h-8 rounded-full bg-zinc-800/80 hover:bg-zinc-700 active:scale-95 text-zinc-300 hover:text-white transition-all flex items-center justify-center flex-shrink-0 cursor-pointer"
                     title="Back to contacts"
                   >
-                    <HiArrowLeft className="text-lg text-indigo-400" />
+                    <HiArrowLeft className="text-base text-indigo-400" />
                   </button>
 
-                  <div className="w-10 h-10 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center font-bold text-sm text-white overflow-hidden flex-shrink-0">
-                    {activeContact.avatar ? (
-                      <img src={activeContact.avatar} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      activeContact.name?.[0]?.toUpperCase()
-                    )}
+                  <div className="relative flex-shrink-0">
+                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center font-bold text-xs sm:text-sm text-white overflow-hidden">
+                      {activeContact.avatar ? (
+                        <img src={activeContact.avatar} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        activeContact.name?.[0]?.toUpperCase()
+                      )}
+                    </div>
+                    <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-[#0c0c0e]" />
                   </div>
-                  <div className="min-w-0">
+
+                  <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-extrabold text-white text-sm truncate">{activeContact.name}</h3>
+                      <h3 className="font-black text-white text-xs sm:text-sm truncate">{activeContact.name}</h3>
                       <span className={`text-[9px] px-2 py-0.5 rounded-full border font-extrabold uppercase ${roleBadgeColor[activeContact.role] || roleBadgeColor.participant}`}>
                         {activeContact.role}
                       </span>
                     </div>
-                    <p className="text-xs text-zinc-400 mt-0.5 truncate">{activeContact.subtext}</p>
+                    <p className="text-[11px] text-zinc-400 mt-0.5 truncate font-medium">{activeContact.subtext}</p>
                   </div>
                 </div>
               </div>
 
               {/* Message Thread Feed */}
-              <div className="flex-1 p-4 sm:p-6 overflow-y-auto space-y-3.5 bg-gradient-to-b from-[#09090b] to-[#070708]">
+              <div className="flex-1 p-3.5 sm:p-6 overflow-y-auto space-y-3 bg-[#09090b]">
                 {loadingMessages && messages.length === 0 ? (
                   <div className="py-12 text-center"><div className="spinner mx-auto" /></div>
                 ) : messages.length === 0 ? (
-                  <div className="py-16 text-center text-zinc-500 text-xs space-y-2">
-                    <HiOutlineChatAlt2 className="text-4xl mx-auto text-zinc-600" />
-                    <p className="font-bold text-zinc-400 text-sm">No messages yet</p>
-                    <p>Send a message to start the conversation with <span className="text-indigo-400 font-semibold">{activeContact.name}</span></p>
+                  <div className="py-16 text-center text-zinc-500 text-xs space-y-3 max-w-sm mx-auto">
+                    <div className="w-14 h-14 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center text-2xl mx-auto">
+                      <HiOutlineChatAlt2 />
+                    </div>
+                    <div>
+                      <p className="font-bold text-white text-sm">No messages yet</p>
+                      <p className="text-zinc-400 text-xs mt-1">
+                        Send a message to start the conversation with <span className="text-indigo-400 font-semibold">{activeContact.name}</span>
+                      </p>
+                    </div>
                   </div>
                 ) : (
                   messages.map((msg, index) => {
@@ -356,21 +366,21 @@ const ChatPage = () => {
                     return (
                       <div key={msg._id || index} className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}>
                         <div
-                          className={`max-w-md px-4 py-2.5 rounded-2xl text-xs shadow-md space-y-1 ${
+                          className={`max-w-[85%] sm:max-w-[75%] px-3.5 py-2.5 rounded-2xl text-xs shadow-md space-y-1 ${
                             isMe
                               ? "bg-indigo-600 text-white rounded-tr-xs"
-                              : "bg-[#18181c] border border-zinc-800 text-zinc-100 rounded-tl-xs"
+                              : "bg-[#18181b] border border-zinc-800/80 text-zinc-100 rounded-tl-xs"
                           }`}
                         >
                           {!isMe && (
-                            <div className="flex items-center justify-between gap-2 mb-1 border-b border-zinc-700/50 pb-1">
+                            <div className="flex items-center justify-between gap-2 mb-1 border-b border-zinc-700/40 pb-1">
                               <span className="font-bold text-indigo-300 text-[11px]">{msg.senderName}</span>
                               <span className={`text-[8px] px-1.5 py-0.2 rounded border font-extrabold uppercase ${roleBadge}`}>
                                 {senderRole}
                               </span>
                             </div>
                           )}
-                          <p className="whitespace-pre-wrap leading-relaxed text-xs">{msg.content}</p>
+                          <p className="whitespace-pre-wrap leading-relaxed text-xs sm:text-[13px]">{msg.content}</p>
                           <div className={`text-[9px] text-right font-medium mt-1 ${isMe ? "text-indigo-200" : "text-zinc-500"}`}>
                             {new Date(msg.createdAt || Date.now()).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                           </div>
@@ -383,21 +393,21 @@ const ChatPage = () => {
               </div>
 
               {/* Message Input Footer */}
-              <form onSubmit={handleSendMessage} className="p-3.5 border-t border-zinc-800 bg-[#0d0d10] flex items-center gap-2.5">
+              <form onSubmit={handleSendMessage} className="p-2.5 sm:p-3.5 border-t border-zinc-800/80 bg-[#0c0c0e] flex items-center gap-2 sm:gap-2.5">
                 <input
                   type="text"
                   value={inputContent}
                   onChange={(e) => setInputContent(e.target.value)}
                   placeholder={`Type a message to ${activeContact.name}…`}
-                  className="input-field text-xs py-2.5 px-4 bg-[#141417] flex-1 rounded-xl focus:border-indigo-500"
+                  className="bg-[#161619] border border-zinc-800 text-xs sm:text-sm text-white placeholder-zinc-500 rounded-xl px-3.5 sm:px-4 py-2.5 sm:py-3 focus:outline-none focus:border-indigo-500/80 focus:ring-1 focus:ring-indigo-500/30 flex-1 transition-all"
                 />
                 <button
                   type="submit"
                   disabled={!inputContent.trim() || sending}
-                  className="btn-primary text-xs px-4 py-2.5 rounded-xl flex items-center gap-2 font-bold cursor-pointer disabled:opacity-50"
+                  className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-3.5 sm:px-5 py-2.5 sm:py-3 rounded-xl flex items-center gap-2 shadow-lg shadow-indigo-600/20 active:scale-95 transition-all text-xs sm:text-sm cursor-pointer disabled:opacity-50 flex-shrink-0"
                 >
                   <HiOutlinePaperAirplane className="rotate-90 text-sm" />
-                  <span>Send</span>
+                  <span className="hidden sm:inline">Send</span>
                 </button>
               </form>
             </>
