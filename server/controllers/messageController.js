@@ -158,49 +158,28 @@ const getChatContacts = asyncHandler(async (req, res) => {
           });
 
         regs.forEach(r => {
-          if (r.registeredBy && r.registeredBy._id.toString() !== currentUser._id.toString()) {
+          if (r.team && r.team.leader && r.team.leader._id.toString() !== currentUser._id.toString()) {
             contacts.push({
-              _id: r.registeredBy._id.toString(),
-              name: r.registeredBy.name,
-              email: r.registeredBy.email,
-              avatar: r.registeredBy.avatar,
-              role: r.registeredBy.role,
+              _id: r.team.leader._id.toString(),
+              name: r.team.leader.name || r.team.leader.email || "Team Leader",
+              email: r.team.leader.email || "",
+              avatar: r.team.leader.avatar || "",
+              role: r.team.leader.role || "participant",
               category: "Participants & Teams",
-              subtext: `Participant`,
+              subtext: `Team Leader (Team: ${r.team.name})`,
               type: "direct",
             });
-          }
-
-          if (r.team) {
-            if (r.team.leader && r.team.leader._id.toString() !== currentUser._id.toString()) {
-              contacts.push({
-                _id: r.team.leader._id.toString(),
-                name: r.team.leader.name,
-                email: r.team.leader.email,
-                avatar: r.team.leader.avatar,
-                role: r.team.leader.role || "participant",
-                category: "Participants & Teams",
-                subtext: `Team Leader (${r.team.name})`,
-                type: "direct",
-              });
-            }
-
-            if (Array.isArray(r.team.members)) {
-              r.team.members.forEach(m => {
-                if (m && m._id.toString() !== currentUser._id.toString()) {
-                  contacts.push({
-                    _id: m._id.toString(),
-                    name: m.name,
-                    email: m.email,
-                    avatar: m.avatar,
-                    role: m.role || "participant",
-                    category: "Participants & Teams",
-                    subtext: `Team Member (${r.team.name})`,
-                    type: "direct",
-                  });
-                }
-              });
-            }
+          } else if (r.registeredBy && r.registeredBy._id.toString() !== currentUser._id.toString()) {
+            contacts.push({
+              _id: r.registeredBy._id.toString(),
+              name: r.registeredBy.name || r.registeredBy.email || "Participant",
+              email: r.registeredBy.email || "",
+              avatar: r.registeredBy.avatar || "",
+              role: r.registeredBy.role || "participant",
+              category: "Participants & Teams",
+              subtext: r.team ? `Team Leader (Team: ${r.team.name})` : "Participant",
+              type: "direct",
+            });
           }
         });
       }
