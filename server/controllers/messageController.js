@@ -96,10 +96,10 @@ const getChatContacts = asyncHandler(async (req, res) => {
       if (h.organizer && h.organizer._id.toString() !== currentUser._id.toString()) {
         contacts.push({
           _id: h.organizer._id.toString(),
-          name: h.organizer.name,
-          email: h.organizer.email,
-          avatar: h.organizer.avatar,
-          role: h.organizer.role,
+          name: h.organizer.name || h.organizer.email || "Organizer",
+          email: h.organizer.email || "",
+          avatar: h.organizer.avatar || "",
+          role: h.organizer.role || "organizer",
           category: "Organizers",
           subtext: `Hackathon: ${h.title}`,
           hackathonId: h._id,

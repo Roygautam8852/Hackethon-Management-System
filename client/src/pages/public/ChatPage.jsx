@@ -116,12 +116,18 @@ const ChatPage = () => {
     }
   };
 
-  // Filter contacts
+  // Filter contacts safely without throwing TypeError on missing properties
   const filteredContacts = contacts.filter((c) => {
+    if (!c) return false;
+    const nameStr = (c.name || "").toLowerCase();
+    const subtextStr = (c.subtext || "").toLowerCase();
+    const emailStr = (c.email || "").toLowerCase();
+    const searchStr = (search || "").toLowerCase();
+
     const matchesSearch =
-      c.name.toLowerCase().includes(search.toLowerCase()) ||
-      (c.subtext && c.subtext.toLowerCase().includes(search.toLowerCase())) ||
-      (c.email && c.email.toLowerCase().includes(search.toLowerCase()));
+      nameStr.includes(searchStr) ||
+      subtextStr.includes(searchStr) ||
+      emailStr.includes(searchStr);
 
     const matchesCategory =
       categoryFilter === "All" ||
