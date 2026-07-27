@@ -4,7 +4,7 @@ import { userAPI } from "../../services/apiServices";
 import toast from "react-hot-toast";
 import {
   HiOutlineSearch, HiOutlineBan, HiOutlineTrash, HiOutlinePencil,
-  HiOutlineX, HiOutlineScale,
+  HiOutlineX, HiOutlineScale, HiOutlineCheck,
 } from "react-icons/hi";
 
 const AdminJudgesPage = () => {
