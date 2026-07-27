@@ -19,6 +19,11 @@ const JudgeDashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (user?.isApproved === false) {
+      setLoading(false);
+      return;
+    }
+
     Promise.allSettled([
       reviewAPI.getMy(),
       hackathonAPI.getMyAssigned(),
@@ -91,7 +96,40 @@ const JudgeDashboard = () => {
         setTotalPendingCount(pendingSum);
       }
     }).finally(() => setLoading(false));
-  }, []);
+  }, [user]);
+
+  if (user?.isApproved === false) {
+    return (
+      <DashboardLayout>
+        <div className="max-w-2xl mx-auto py-12 px-4 text-center space-y-6">
+          <div className="w-20 h-20 bg-amber-500/15 text-amber-400 border border-amber-500/30 rounded-3xl flex items-center justify-center text-4xl mx-auto shadow-2xl shadow-amber-500/10 animate-bounce">
+            ⚖️
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-2xl font-black text-white">Judge Account Pending Approval</h2>
+            <p className="text-zinc-400 text-xs sm:text-sm max-w-lg mx-auto leading-relaxed">
+              Welcome, <strong className="text-white">{user?.name}</strong>! Your account registration as a Hackathon Judge is currently pending administrator approval.
+            </p>
+          </div>
+
+          <div className="bg-[#111113] border border-zinc-800 rounded-2xl p-6 text-left max-w-md mx-auto space-y-3.5 text-xs text-zinc-300 shadow-xl">
+            <div className="flex items-center gap-2 font-bold text-amber-300 pb-2 border-b border-zinc-800">
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping" />
+              <span>Status: Pending Administrator Review</span>
+            </div>
+            <p className="flex items-start gap-2">
+              <span className="text-amber-400 font-bold">•</span>
+              <span>An administrator must approve your account before event organizers can assign you to judge project submissions.</span>
+            </p>
+            <p className="flex items-start gap-2">
+              <span className="text-amber-400 font-bold">•</span>
+              <span>Once approved, project evaluation scoring cards and assigned hackathons will appear here automatically.</span>
+            </p>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   const stats = [
     { label: "Hackathons Assigned",        value: assignedHackathons.length,     icon: HiOutlineBriefcase,      color: "bg-indigo-500/15 text-indigo-400" },

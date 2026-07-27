@@ -70,7 +70,11 @@ const SidebarContent = ({ onClose }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const links = roleLinksMap[user?.role] || [];
+
+  let links = roleLinksMap[user?.role] || [];
+  if ((user?.role === "organizer" || user?.role === "judge") && user?.isApproved === false) {
+    links = links.filter(l => l.end || l.href === "/profile");
+  }
 
   // NavLinks handle onClose explicitly via onClick handlers
 

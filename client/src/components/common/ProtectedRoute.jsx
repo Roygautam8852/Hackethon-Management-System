@@ -48,6 +48,16 @@ const ProtectedRoute = ({ children, roles = [] }) => {
     return <Navigate to={userDashboard} replace />;
   }
 
+  // Redirect unapproved organizers/judges to their root dashboard if attempting to visit subpages
+  if (
+    (userRole === "organizer" || userRole === "judge") &&
+    user?.isApproved === false &&
+    location.pathname !== userDashboard &&
+    location.pathname !== "/profile"
+  ) {
+    return <Navigate to={userDashboard} replace />;
+  }
+
   return children;
 };
 
