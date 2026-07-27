@@ -67,32 +67,15 @@ const getMessages = asyncHandler(async (req, res) => {
 });
 
 // @desc    Get contacts list categorized by role for WhatsApp-style chat
+// @desc    Get contacts list categorized by role for WhatsApp-style chat
 // @route   GET /api/messages/contacts
 // @access  Private (All Roles)
 const getChatContacts = asyncHandler(async (req, res) => {
   const currentUser = req.user;
   let contacts = [];
 
-  // Always fetch platform Admins for direct messaging
-  const admins = await User.find({ role: "admin", _id: { $ne: currentUser._id } })
-    .select("name email avatar role bio")
-    .sort({ name: 1 });
-
-  admins.forEach(a => {
-    contacts.push({
-      _id: a._id.toString(),
-      name: a.name,
-      email: a.email,
-      avatar: a.avatar,
-      role: a.role,
-      category: "Admins",
-      subtext: "System Administrator",
-      type: "direct",
-    });
-  });
-
   if (currentUser.role === "participant") {
-    // Participant: get all hackathons they registered for
+    // Participant: ONLY get organizers of hackathons in which this participant has registered
     const myRegistrations = await Registration.find({ user: currentUser._id }).populate({
       path: "hackathon",
       populate: { path: "organizer", select: "name email avatar role" }
@@ -100,11 +83,7 @@ const getChatContacts = asyncHandler(async (req, res) => {
 
     const registeredHackathons = myRegistrations.map(r => r.hackathon).filter(Boolean);
 
-    // Also get all public active hackathons
-    const activeHackathons = await Hackathon.find().populate("organizer", "name email avatar role");
-    const hackathonList = registeredHackathons.length > 0 ? registeredHackathons : activeHackathons;
-
-    hackathonList.forEach(h => {
+    registeredHackathons.forEach(h => {
       if (h.organizer && h.organizer._id.toString() !== currentUser._id.toString()) {
         contacts.push({
           _id: h.organizer._id.toString(),
@@ -117,118 +96,135 @@ const getChatContacts = asyncHandler(async (req, res) => {
           hackathonId: h._id,
           type: "direct",
         });
-      }
-    });
 
-    // Group chat for participant's hackathons
-    registeredHackathons.forEach(h => {
-      contacts.push({
-        _id: `group_${h._id}`,
-        name: `${h.title} (Group Channel)`,
-        avatar: h.bannerImage || "",
-        role: "group",
-        category: "Group Channels",
-        subtext: "Public Hackathon Forum",
-        hackathonId: h._id,
-        type: "group",
-      });
-    });
-  } else if (currentUser.role === "organizer") {
-    // Organizer: get all judges
-    const judges = await User.find({ role: "judge", isApproved: { $ne: false }, isBlocked: false })
-      .select("name email avatar role skills")
-      .sort({ name: 1 });
-
-    judges.forEach(j => {
-      contacts.push({
-        _id: j._id.toString(),
-        name: j.name,
-        email: j.email,
-        avatar: j.avatar,
-        role: j.role,
-        category: "Judges",
-        subtext: j.skills?.length ? `Skills: ${j.skills.slice(0, 2).join(", ")}` : "Evaluator",
-        type: "direct",
-      });
-    });
-
-    // Organizer: get participants & team leaders
-    const myHackathons = await Hackathon.find({ organizer: currentUser._id });
-    const myHackathonIds = myHackathons.map(h => h._id);
-
-    if (myHackathonIds.length > 0) {
-      const regs = await Registration.find({ hackathon: { $in: myHackathonIds } }).populate("user", "name email avatar role");
-      regs.forEach(r => {
-        if (r.user && r.user._id.toString() !== currentUser._id.toString()) {
-          contacts.push({
-            _id: r.user._id.toString(),
-            name: r.user.name,
-            email: r.user.email,
-            avatar: r.user.avatar,
-            role: r.user.role,
-            category: "Participants & Teams",
-            subtext: `Participant`,
-            type: "direct",
-          });
-        }
-      });
-
-      // Group Channels for their hackathons
-      myHackathons.forEach(h => {
         contacts.push({
           _id: `group_${h._id}`,
-          name: `${h.title} (Channel)`,
+          name: `${h.title} (Group Channel)`,
           avatar: h.bannerImage || "",
           role: "group",
           category: "Group Channels",
-          subtext: "Organizer Forum",
+          subtext: "Registered Hackathon Forum",
           hackathonId: h._id,
           type: "group",
         });
-      });
-    }
-  } else if (currentUser.role === "judge") {
-    // Judge: get organizers
-    const organizers = await User.find({ role: "organizer", isApproved: { $ne: false }, isBlocked: false })
-      .select("name email avatar role")
+      }
+    });
+  } else {
+    // Always fetch platform Admins for direct messaging for non-participant roles
+    const admins = await User.find({ role: "admin", _id: { $ne: currentUser._id } })
+      .select("name email avatar role bio")
       .sort({ name: 1 });
 
-    organizers.forEach(o => {
+    admins.forEach(a => {
       contacts.push({
-        _id: o._id.toString(),
-        name: o.name,
-        email: o.email,
-        avatar: o.avatar,
-        role: o.role,
-        category: "Organizers",
-        subtext: "Hackathon Organizer",
+        _id: a._id.toString(),
+        name: a.name,
+        email: a.email,
+        avatar: a.avatar,
+        role: a.role,
+        category: "Admins",
+        subtext: "System Administrator",
         type: "direct",
       });
     });
-  } else if (currentUser.role === "admin") {
-    // Admin: get all organizers, judges, participants
-    const [allOrganizers, allJudges, allParticipants] = await Promise.all([
-      User.find({ role: "organizer", _id: { $ne: currentUser._id } }).select("name email avatar role"),
-      User.find({ role: "judge", _id: { $ne: currentUser._id } }).select("name email avatar role"),
-      User.find({ role: "participant", _id: { $ne: currentUser._id } }).select("name email avatar role").limit(30),
-    ]);
 
-    allOrganizers.forEach(o => contacts.push({ _id: o._id.toString(), name: o.name, email: o.email, avatar: o.avatar, role: o.role, category: "Organizers", subtext: "Platform Organizer", type: "direct" }));
-    allJudges.forEach(j => contacts.push({ _id: j._id.toString(), name: j.name, email: j.email, avatar: j.avatar, role: j.role, category: "Judges", subtext: "Platform Judge", type: "direct" }));
-    allParticipants.forEach(p => contacts.push({ _id: p._id.toString(), name: p.name, email: p.email, avatar: p.avatar, role: p.role, category: "Participants", subtext: "Hacker / Developer", type: "direct" }));
+    if (currentUser.role === "organizer") {
+      // Organizer: get all judges
+      const judges = await User.find({ role: "judge", isApproved: { $ne: false }, isBlocked: false })
+        .select("name email avatar role skills")
+        .sort({ name: 1 });
+
+      judges.forEach(j => {
+        contacts.push({
+          _id: j._id.toString(),
+          name: j.name,
+          email: j.email,
+          avatar: j.avatar,
+          role: j.role,
+          category: "Judges",
+          subtext: j.skills?.length ? `Skills: ${j.skills.slice(0, 2).join(", ")}` : "Evaluator",
+          type: "direct",
+        });
+      });
+
+      // Organizer: get participants & team leaders of their hackathons
+      const myHackathons = await Hackathon.find({ organizer: currentUser._id });
+      const myHackathonIds = myHackathons.map(h => h._id);
+
+      if (myHackathonIds.length > 0) {
+        const regs = await Registration.find({ hackathon: { $in: myHackathonIds } }).populate("user", "name email avatar role");
+        regs.forEach(r => {
+          if (r.user && r.user._id.toString() !== currentUser._id.toString()) {
+            contacts.push({
+              _id: r.user._id.toString(),
+              name: r.user.name,
+              email: r.user.email,
+              avatar: r.user.avatar,
+              role: r.user.role,
+              category: "Participants & Teams",
+              subtext: `Participant`,
+              type: "direct",
+            });
+          }
+        });
+
+        // Group Channels for their hackathons
+        myHackathons.forEach(h => {
+          contacts.push({
+            _id: `group_${h._id}`,
+            name: `${h.title} (Channel)`,
+            avatar: h.bannerImage || "",
+            role: "group",
+            category: "Group Channels",
+            subtext: "Organizer Forum",
+            hackathonId: h._id,
+            type: "group",
+          });
+        });
+      }
+    } else if (currentUser.role === "judge") {
+      // Judge: get organizers
+      const organizers = await User.find({ role: "organizer", isApproved: { $ne: false }, isBlocked: false })
+        .select("name email avatar role")
+        .sort({ name: 1 });
+
+      organizers.forEach(o => {
+        contacts.push({
+          _id: o._id.toString(),
+          name: o.name,
+          email: o.email,
+          avatar: o.avatar,
+          role: o.role,
+          category: "Organizers",
+          subtext: "Hackathon Organizer",
+          type: "direct",
+        });
+      });
+    } else if (currentUser.role === "admin") {
+      // Admin: get all organizers, judges, participants
+      const [allOrganizers, allJudges, allParticipants] = await Promise.all([
+        User.find({ role: "organizer", _id: { $ne: currentUser._id } }).select("name email avatar role"),
+        User.find({ role: "judge", _id: { $ne: currentUser._id } }).select("name email avatar role"),
+        User.find({ role: "participant", _id: { $ne: currentUser._id } }).select("name email avatar role").limit(30),
+      ]);
+
+      allOrganizers.forEach(o => contacts.push({ _id: o._id.toString(), name: o.name, email: o.email, avatar: o.avatar, role: o.role, category: "Organizers", subtext: "Platform Organizer", type: "direct" }));
+      allJudges.forEach(j => contacts.push({ _id: j._id.toString(), name: j.name, email: j.email, avatar: j.avatar, role: j.role, category: "Judges", subtext: "Platform Judge", type: "direct" }));
+      allParticipants.forEach(p => contacts.push({ _id: p._id.toString(), name: p.name, email: p.email, avatar: p.avatar, role: p.role, category: "Participants", subtext: "Hacker / Developer", type: "direct" }));
+    }
+
+    // Always add Global Group Chat for admins/organizers/judges
+    contacts.unshift({
+      _id: "group_global",
+      name: "Global Platform Discussion",
+      avatar: "",
+      role: "group",
+      category: "Group Channels",
+      subtext: "Public chat for all members",
+      hackathonId: null,
+      type: "group",
+    });
   }
-
-  // Always add Global Group Chat
-  contacts.unshift({
-    _id: "group_global",
-    name: "Global Platform Discussion",
-    avatar: "",
-    role: "group",
-    category: "Group Channels",
-    subtext: "Public chat for all members",
-    hackathonId: null,
-    type: "group",
-  });
 
   // Deduplicate contacts by _id
   const uniqueMap = new Map();

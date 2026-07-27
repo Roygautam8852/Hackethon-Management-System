@@ -131,7 +131,14 @@ const ChatPage = () => {
     return matchesSearch && matchesCategory;
   });
 
-  const categories = ["All", "Organizers", "Judges", "Admins", "Participants & Teams", "Group Channels"];
+  const categoryMap = {
+    participant: ["All", "Organizers", "Group Channels"],
+    organizer: ["All", "Judges", "Participants & Teams", "Admins", "Group Channels"],
+    judge: ["All", "Organizers", "Admins"],
+    admin: ["All", "Organizers", "Judges", "Participants & Teams", "Group Channels"],
+  };
+
+  const categories = categoryMap[user?.role] || ["All", "Organizers", "Group Channels"];
 
   return (
     <DashboardLayout>
