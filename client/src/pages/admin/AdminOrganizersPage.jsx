@@ -179,14 +179,33 @@ const AdminOrganizersPage = () => {
                         {new Date(u.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
                       </td>
                       <td className="text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <button
-                            onClick={() => handleApprove(u._id, u.isApproved !== false)}
-                            className={`btn-ghost text-xs p-1.5 ${u.isApproved !== false ? "text-amber-400 hover:text-amber-300" : "text-emerald-400 hover:text-emerald-300 font-bold"}`}
-                            title={u.isApproved !== false ? "Revoke Approval" : "Approve Organizer"}
-                          >
-                            <HiOutlineCheck className="text-sm" />
-                          </button>
+                        <div className="flex items-center justify-end gap-1.5">
+                          {u.isApproved === false ? (
+                            <>
+                              <button
+                                onClick={() => handleApprove(u._id, false)}
+                                className="px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 hover:bg-emerald-500/30 flex items-center gap-1 cursor-pointer transition-all shadow-sm"
+                                title="Approve Organizer Account"
+                              >
+                                <HiOutlineCheck className="text-sm" /> Approve
+                              </button>
+                              <button
+                                onClick={() => handleBlock(u._id, false)}
+                                className="px-2.5 py-1 rounded-lg text-xs font-bold bg-red-500/20 text-red-400 border border-red-500/40 hover:bg-red-500/30 flex items-center gap-1 cursor-pointer transition-all shadow-sm"
+                                title="Reject and Block Organizer"
+                              >
+                                <HiOutlineX className="text-sm" /> Reject
+                              </button>
+                            </>
+                          ) : (
+                            <button
+                              onClick={() => handleApprove(u._id, true)}
+                              className="px-2.5 py-1 rounded-lg text-xs font-semibold text-amber-400 hover:text-amber-300 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 flex items-center gap-1 cursor-pointer transition-all"
+                              title="Revoke Approval"
+                            >
+                              <HiOutlineX className="text-xs" /> Revoke
+                            </button>
+                          )}
                           <button
                             onClick={() => { setEditUser(u); setEditRole(u.role); setEditName(u.name); }}
                             className="btn-ghost text-xs p-1.5 text-zinc-400 hover:text-white"

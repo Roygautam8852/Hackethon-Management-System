@@ -192,13 +192,32 @@ const AdminUsersPage = () => {
                         <td>
                           <div className="flex items-center gap-2">
                             {(u.role === "organizer" || u.role === "judge") && (
-                              <button
-                                onClick={() => handleApprove(u._id, u.isApproved !== false)}
-                                className={`btn-ghost btn-sm ${u.isApproved !== false ? "text-amber-400" : "text-emerald-400 font-bold"}`}
-                                title={u.isApproved !== false ? "Revoke Approval" : "Approve Account"}
-                              >
-                                <HiOutlineCheck />
-                              </button>
+                              u.isApproved === false ? (
+                                <>
+                                  <button
+                                    onClick={() => handleApprove(u._id, false)}
+                                    className="px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 hover:bg-emerald-500/30 flex items-center gap-1 cursor-pointer"
+                                    title="Approve Account"
+                                  >
+                                    <HiOutlineCheck className="text-xs" /> Approve
+                                  </button>
+                                  <button
+                                    onClick={() => handleBlock(u._id, false)}
+                                    className="px-2 py-0.5 rounded text-[11px] font-bold bg-red-500/20 text-red-400 border border-red-500/40 hover:bg-red-500/30 flex items-center gap-1 cursor-pointer"
+                                    title="Reject & Block Account"
+                                  >
+                                    <HiOutlineX className="text-xs" /> Reject
+                                  </button>
+                                </>
+                              ) : (
+                                <button
+                                  onClick={() => handleApprove(u._id, true)}
+                                  className="px-2 py-0.5 rounded text-[11px] font-semibold text-amber-400 hover:text-amber-300 bg-amber-500/15 border border-amber-500/30 flex items-center gap-1 cursor-pointer"
+                                  title="Revoke Approval"
+                                >
+                                  <HiOutlineX className="text-xs" /> Revoke
+                                </button>
+                              )
                             )}
                             <button
                               onClick={() => openEdit(u)}
