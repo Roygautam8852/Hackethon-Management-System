@@ -46,8 +46,8 @@ import JudgeHackathonsPage from "./pages/judge/JudgeHackathonsPage";
 import ReviewSubmissionPage from "./pages/judge/ReviewSubmissionPage";
 import JudgeCompletedPage from "./pages/judge/JudgeCompletedPage";
 
-// Profile
 import ProfilePage from "./pages/ProfilePage";
+import ChatPage from "./pages/public/ChatPage";
 
 // Error pages
 import NotFoundPage from "./pages/NotFoundPage";
@@ -84,9 +84,12 @@ function App() {
             <ProtectedRoute><LeaderboardPage /></ProtectedRoute>
           } />
 
-          {/* Profile (any authenticated user) */}
+          {/* Profile & Chat (any authenticated user) */}
           <Route path="/profile" element={
             <ProtectedRoute><ProfilePage /></ProtectedRoute>
+          } />
+          <Route path="/chat" element={
+            <ProtectedRoute><ChatPage /></ProtectedRoute>
           } />
 
           {/* Admin routes */}

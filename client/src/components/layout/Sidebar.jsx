@@ -7,7 +7,7 @@ import {
   HiOutlineClipboardList, HiOutlineChartBar, HiOutlineLogout,
   HiOutlineStar, HiOutlinePencilAlt, HiOutlineBriefcase,
   HiOutlineDocumentText, HiOutlineUserGroup, HiOutlineUser,
-  HiOutlineX,
+  HiOutlineX, HiOutlineChatAlt2,
 } from "react-icons/hi";
 import { RiRocketLine, RiTrophyLine } from "react-icons/ri";
 import toast from "react-hot-toast";
@@ -21,6 +21,7 @@ const adminLinks = [
   { label: "Users (All)", href: "/admin/users", icon: HiOutlineUsers },
   { label: "Hackathons", href: "/admin/hackathons", icon: HiOutlineCollection },
   { label: "Analytics", href: "/admin/analytics", icon: HiOutlineChartBar },
+  { label: "Direct & Group Chat", href: "/chat", icon: HiOutlineChatAlt2 },
   { label: "My Profile", href: "/profile", icon: HiOutlineUser },
 ];
 
@@ -32,6 +33,7 @@ const organizerLinks = [
   { label: "Submissions", href: "/organizer/submissions", icon: HiOutlineDocumentText },
   { label: "Judges", href: "/organizer/judges", icon: HiOutlineStar },
   { label: "Announce Winners", href: "/organizer/announce-winners", icon: RiTrophyLine },
+  { label: "Direct & Group Chat", href: "/chat", icon: HiOutlineChatAlt2 },
   { label: "My Profile", href: "/profile", icon: HiOutlineUser },
 ];
 
@@ -41,6 +43,7 @@ const participantLinks = [
   { label: "My Team", href: "/participant/team", icon: HiOutlineUserGroup },
   { label: "My Submission", href: "/participant/submission", icon: HiOutlinePencilAlt },
   { label: "Results", href: "/participant/results", icon: RiTrophyLine },
+  { label: "Direct & Group Chat", href: "/chat", icon: HiOutlineChatAlt2 },
   { label: "My Profile", href: "/profile", icon: HiOutlineUser },
 ];
 
@@ -49,6 +52,7 @@ const judgeLinks = [
   { label: "Assigned Projects", href: "/judge/projects", icon: HiOutlineBriefcase },
   { label: "Assigned Hackathons", href: "/judge/hackathons", icon: HiOutlineCollection },
   { label: "Completed", href: "/judge/completed", icon: HiOutlineClipboardList },
+  { label: "Direct & Group Chat", href: "/chat", icon: HiOutlineChatAlt2 },
   { label: "My Profile", href: "/profile", icon: HiOutlineUser },
 ];
 

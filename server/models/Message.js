@@ -25,6 +25,20 @@ const messageSchema = new mongoose.Schema(
       ref: "Hackathon",
       default: null,
     },
+    recipient: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+    chatType: {
+      type: String,
+      enum: ["direct", "group"],
+      default: "group",
+    },
+    read: {
+      type: Boolean,
+      default: false,
+    },
     content: {
       type: String,
       required: [true, "Message content is required"],

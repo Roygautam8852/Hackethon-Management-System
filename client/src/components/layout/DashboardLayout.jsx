@@ -64,19 +64,14 @@ const DashboardLayout = ({ children }) => {
 
           <div className="flex items-center gap-2.5 sm:gap-3">
             {/* 💬 GROUP CHAT BUTTON (Desktop / Laptop Only; Mobile uses Lower Bottom Navigation Bar) */}
-            <button
-              onClick={openChat}
-              className="hidden lg:flex relative items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-extrabold text-indigo-300 bg-indigo-500/15 border border-indigo-500/40 hover:bg-indigo-500/25 transition-all shadow-sm cursor-pointer"
+            {/* 💬 CHAT LINK (Desktop / Laptop Only) */}
+            <Link
+              to="/chat"
+              className="hidden lg:flex relative items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-extrabold text-indigo-300 bg-indigo-500/15 border border-indigo-500/40 hover:bg-indigo-500/25 transition-all shadow-sm"
             >
               <HiOutlineChatAlt2 className="text-base text-indigo-400" />
-              <span>💬 Group Chat</span>
-
-              {unreadCount > 0 && (
-                <span className="bg-red-600 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full border border-red-500 ml-0.5">
-                  {unreadCount}
-                </span>
-              )}
-            </button>
+              <span>💬 Messages & Chat</span>
+            </Link>
 
             {/* Back to Home Button */}
             <Link
@@ -134,18 +129,17 @@ const DashboardLayout = ({ children }) => {
             <span className="text-[10px]">Hackathons</span>
           </Link>
 
-          <button
-            onClick={openChat}
-            className="relative flex flex-col items-center gap-1 py-1 px-3 rounded-xl text-indigo-400 hover:text-indigo-300 transition-all cursor-pointer"
+          <Link
+            to="/chat"
+            className={`flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all ${
+              location.pathname === "/chat"
+                ? "text-indigo-300 bg-indigo-500/20 font-bold"
+                : "text-indigo-400 hover:text-indigo-300"
+            }`}
           >
             <HiOutlineChatAlt2 className="text-lg" />
             <span className="text-[10px] font-bold">Chat</span>
-            {unreadCount > 0 && (
-              <span className="absolute -top-1 right-1 bg-red-600 text-white text-[9px] font-black px-1.5 py-0.2 rounded-full border border-red-500">
-                {unreadCount}
-              </span>
-            )}
-          </button>
+          </Link>
 
           <Link
             to="/profile"

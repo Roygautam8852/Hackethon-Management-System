@@ -95,8 +95,11 @@ export const leaderboardAPI = {
   get: (hackathonId) => api.get(`/leaderboard/${hackathonId}`),
 };
 
-// Group Chat Messages
+// Messages & Direct Chat
 export const messageAPI = {
   send: (data) => api.post("/messages", data),
   get: (hackathonId) => api.get(`/messages${hackathonId ? `?hackathonId=${hackathonId}` : ""}`),
+  getContacts: () => api.get("/messages/contacts"),
+  getDirect: (userId) => api.get(`/messages/direct/${userId}`),
+  sendDirect: (data) => api.post("/messages/direct", data),
 };
