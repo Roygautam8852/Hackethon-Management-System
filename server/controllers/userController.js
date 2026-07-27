@@ -7,7 +7,7 @@ const ApiResponse = require("../utils/ApiResponse");
 // @route   GET /api/users
 // @access  Admin
 const getAllUsers = asyncHandler(async (req, res) => {
-  const { search, role, isBlocked, page = 1, limit = 20 } = req.query;
+  const { search, role, isBlocked, isApproved, page = 1, limit = 20 } = req.query;
 
   const query = {};
   if (search) {
@@ -18,7 +18,13 @@ const getAllUsers = asyncHandler(async (req, res) => {
   }
   if (role) query.role = role;
   if (isBlocked !== undefined) query.isBlocked = isBlocked === "true";
-  if (isApproved !== undefined) query.isApproved = isApproved === "true";
+  if (isApproved !== undefined) {
+    if (isApproved === "true") {
+      query.isApproved = { $ne: false };
+    } else if (isApproved === "false") {
+      query.isApproved = false;
+    }
+  }
 
   const skip = (Number(page) - 1) * Number(limit);
   const [users, total] = await Promise.all([

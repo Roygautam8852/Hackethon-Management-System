@@ -242,7 +242,7 @@ const assignJudge = asyncHandler(async (req, res) => {
   }
 
   const judge = await User.findById(judgeId);
-  if (!judge || judge.role !== "judge" || !judge.isApproved || judge.isBlocked) {
+  if (!judge || judge.role !== "judge" || judge.isApproved === false || judge.isBlocked) {
     throw new ApiError(400, "Judge is not valid or pending admin approval");
   }
 
@@ -359,7 +359,7 @@ const findJudgeByEmail = asyncHandler(async (req, res) => {
   const user = await User.findOne({
     email: email.toLowerCase().trim(),
     role: "judge",
-    isApproved: true,
+    isApproved: { $ne: false },
     isBlocked: false,
   }).select("name email avatar role");
   if (!user) throw new ApiError(404, "No approved judge found with this email");
@@ -371,7 +371,7 @@ const findJudgeByEmail = asyncHandler(async (req, res) => {
 // @route   GET /api/hackathons/judges/all
 // @access  Organizer | Admin
 const getAllJudges = asyncHandler(async (req, res) => {
-  const judges = await User.find({ role: "judge", isApproved: true, isBlocked: false })
+  const judges = await User.find({ role: "judge", isApproved: { $ne: false }, isBlocked: false })
     .select("name email avatar bio skills createdAt")
     .sort({ name: 1 });
 

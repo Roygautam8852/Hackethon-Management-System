@@ -49,9 +49,7 @@ const userSchema = new mongoose.Schema(
     },
     isApproved: {
       type: Boolean,
-      default: function () {
-        return this.role === "participant" || this.role === "admin";
-      },
+      default: true,
     },
     // Social links
     github: { type: String, default: "" },
