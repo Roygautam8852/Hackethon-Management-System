@@ -63,9 +63,9 @@ const ChatPage = () => {
   }, []);
 
   // Fetch active conversation messages
-  const fetchMessages = async (contact) => {
+  const fetchMessages = async (contact, silent = false) => {
     if (!contact) return;
-    setLoadingMessages(true);
+    if (!silent) setLoadingMessages(true);
     try {
       if (contact.type === "direct") {
         const res = await messageAPI.getDirect(contact._id);
@@ -77,14 +77,14 @@ const ChatPage = () => {
     } catch (e) {
       console.error(e);
     } finally {
-      setLoadingMessages(false);
+      if (!silent) setLoadingMessages(false);
     }
   };
 
   useEffect(() => {
     if (activeContact) {
-      fetchMessages(activeContact);
-      const timer = setInterval(() => fetchMessages(activeContact), 4000);
+      fetchMessages(activeContact, false);
+      const timer = setInterval(() => fetchMessages(activeContact, true), 4000);
       return () => clearInterval(timer);
     }
   }, [activeContact]);
