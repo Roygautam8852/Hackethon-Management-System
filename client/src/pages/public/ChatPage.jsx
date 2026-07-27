@@ -109,6 +109,20 @@ const ChatPage = () => {
         const res = await messageAPI.send({ content: text, hackathonId: activeContact.hackathonId });
         setMessages((prev) => [...prev, res.data.data.message]);
       }
+
+      // Bump contact to top of list with updated lastMessage
+      setContacts((prev) => {
+        const updated = prev.map((c) =>
+          c._id === activeContact._id
+            ? { ...c, lastMessage: text, lastMessageTime: new Date().toISOString() }
+            : c
+        );
+        return updated.sort((a, b) => {
+          const timeA = a.lastMessageTime ? new Date(a.lastMessageTime).getTime() : 0;
+          const timeB = b.lastMessageTime ? new Date(b.lastMessageTime).getTime() : 0;
+          return timeB - timeA;
+        });
+      });
     } catch (e) {
       toast.error(e.response?.data?.message || "Failed to send message");
     } finally {
@@ -121,12 +135,14 @@ const ChatPage = () => {
     if (!c) return false;
     const nameStr = (c.name || "").toLowerCase();
     const subtextStr = (c.subtext || "").toLowerCase();
+    const lastMsgStr = (c.lastMessage || "").toLowerCase();
     const emailStr = (c.email || "").toLowerCase();
     const searchStr = (search || "").toLowerCase();
 
     const matchesSearch =
       nameStr.includes(searchStr) ||
       subtextStr.includes(searchStr) ||
+      lastMsgStr.includes(searchStr) ||
       emailStr.includes(searchStr);
 
     const matchesCategory =
@@ -259,11 +275,26 @@ const ChatPage = () => {
                             </span>
                           )}
                         </div>
-                        <span className={`text-[9px] px-1.5 py-0.2 rounded-full border font-extrabold uppercase ${badgeStyle}`}>
-                          {contact.role}
-                        </span>
+                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                          {contact.lastMessageTime && (
+                            <span className="text-[9px] text-zinc-500 font-medium">
+                              {new Date(contact.lastMessageTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                            </span>
+                          )}
+                          <span className={`text-[9px] px-1.5 py-0.2 rounded-full border font-extrabold uppercase ${badgeStyle}`}>
+                            {contact.role}
+                          </span>
+                        </div>
                       </div>
-                      <p className="text-[11px] text-zinc-400 truncate">{contact.subtext}</p>
+                      <p className="text-[11px] truncate">
+                        {contact.lastMessage ? (
+                          <span className={contact.unreadCount > 0 ? "font-bold text-zinc-200" : "text-zinc-400"}>
+                            {contact.lastMessage}
+                          </span>
+                        ) : (
+                          <span className="text-zinc-500">{contact.subtext}</span>
+                        )}
+                      </p>
                     </div>
                   </button>
                 );

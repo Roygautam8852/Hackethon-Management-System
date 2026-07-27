@@ -243,10 +243,64 @@ const getChatContacts = asyncHandler(async (req, res) => {
   const unreadMap = new Map();
   unreadCounts.forEach(u => unreadMap.set(u._id.toString(), u.count));
 
-  const finalContacts = Array.from(uniqueMap.values()).map(c => ({
-    ...c,
-    unreadCount: unreadMap.get(c._id) || 0,
-  }));
+  // Aggregate last message info for each contact pair involving currentUser
+  const lastMessages = await Message.aggregate([
+    {
+      $match: {
+        chatType: "direct",
+        $or: [
+          { sender: currentUser._id },
+          { recipient: currentUser._id },
+        ],
+      },
+    },
+    {
+      $sort: { createdAt: -1 },
+    },
+    {
+      $group: {
+        _id: {
+          $cond: [
+            { $eq: ["$sender", currentUser._id] },
+            "$recipient",
+            "$sender",
+          ],
+        },
+        content: { $first: "$content" },
+        createdAt: { $first: "$createdAt" },
+      },
+    },
+  ]);
+
+  const lastMessageMap = new Map();
+  lastMessages.forEach(lm => {
+    if (lm._id) {
+      lastMessageMap.set(lm._id.toString(), {
+        content: lm.content,
+        time: lm.createdAt,
+      });
+    }
+  });
+
+  const finalContacts = Array.from(uniqueMap.values()).map(c => {
+    const lastMsg = lastMessageMap.get(c._id);
+    return {
+      ...c,
+      unreadCount: unreadMap.get(c._id) || 0,
+      lastMessage: lastMsg ? lastMsg.content : "",
+      lastMessageTime: lastMsg ? lastMsg.time : null,
+    };
+  });
+
+  // Sort contacts by most recent message timestamp descending, then unread count, then name
+  finalContacts.sort((a, b) => {
+    const timeA = a.lastMessageTime ? new Date(a.lastMessageTime).getTime() : 0;
+    const timeB = b.lastMessageTime ? new Date(b.lastMessageTime).getTime() : 0;
+
+    if (timeA !== timeB) return timeB - timeA;
+    if (a.unreadCount !== b.unreadCount) return b.unreadCount - a.unreadCount;
+    return (a.name || "").localeCompare(b.name || "");
+  });
 
   res.status(200).json(new ApiResponse(200, { contacts: finalContacts }, "Contacts fetched successfully"));
 });
