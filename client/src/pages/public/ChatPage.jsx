@@ -7,7 +7,7 @@ import {
   HiOutlineSearch, HiOutlinePaperAirplane, HiOutlineChatAlt2,
   HiOutlineUser, HiOutlineSparkles, HiOutlineBriefcase,
   HiOutlineUserGroup, HiOutlineShieldCheck, HiOutlineCheckCircle,
-  HiOutlineDotsVertical, HiOutlineRefresh,
+  HiOutlineDotsVertical, HiOutlineRefresh, HiArrowLeft,
 } from "react-icons/hi";
 
 const roleBadgeColor = {
@@ -176,7 +176,7 @@ const ChatPage = () => {
     <DashboardLayout>
       <div className="h-[calc(100vh-6rem)] bg-[#09090b] border border-zinc-800 rounded-2xl overflow-hidden flex shadow-2xl">
         {/* LEFT SIDEBAR: CONTACTS LIST (WhatsApp Style) */}
-        <div className="w-full md:w-80 lg:w-96 border-r border-zinc-800 flex flex-col bg-[#0c0c0e] flex-shrink-0">
+        <div className={`w-full md:w-80 lg:w-96 border-r border-zinc-800 flex-col bg-[#0c0c0e] flex-shrink-0 ${activeContact ? "hidden md:flex" : "flex"}`}>
           {/* Header */}
           <div className="p-3.5 border-b border-zinc-800 flex items-center justify-between bg-[#111113]">
             <div className="flex items-center gap-2.5">
@@ -304,12 +304,20 @@ const ChatPage = () => {
         </div>
 
         {/* RIGHT MAIN PANEL: CHAT WINDOW */}
-        <div className="hidden md:flex flex-1 flex-col bg-[#09090b] relative">
+        <div className={`flex-1 flex-col bg-[#09090b] relative ${activeContact ? "flex" : "hidden md:flex"}`}>
           {activeContact ? (
             <>
               {/* Active Chat Header */}
-              <div className="px-5 py-3.5 border-b border-zinc-800 bg-[#0f0f12] flex items-center justify-between shadow-md">
-                <div className="flex items-center gap-3">
+              <div className="px-4 sm:px-5 py-3.5 border-b border-zinc-800 bg-[#0f0f12] flex items-center justify-between shadow-md">
+                <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                  <button
+                    onClick={() => setActiveContact(null)}
+                    className="md:hidden p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors flex items-center gap-1 text-xs font-bold mr-1 flex-shrink-0 cursor-pointer"
+                    title="Back to contacts"
+                  >
+                    <HiArrowLeft className="text-lg text-indigo-400" />
+                  </button>
+
                   <div className="w-10 h-10 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center font-bold text-sm text-white overflow-hidden flex-shrink-0">
                     {activeContact.avatar ? (
                       <img src={activeContact.avatar} alt="" className="w-full h-full object-cover" />
@@ -317,14 +325,14 @@ const ChatPage = () => {
                       activeContact.name?.[0]?.toUpperCase()
                     )}
                   </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-extrabold text-white text-sm">{activeContact.name}</h3>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="font-extrabold text-white text-sm truncate">{activeContact.name}</h3>
                       <span className={`text-[9px] px-2 py-0.5 rounded-full border font-extrabold uppercase ${roleBadgeColor[activeContact.role] || roleBadgeColor.participant}`}>
                         {activeContact.role}
                       </span>
                     </div>
-                    <p className="text-xs text-zinc-400 mt-0.5">{activeContact.subtext}</p>
+                    <p className="text-xs text-zinc-400 mt-0.5 truncate">{activeContact.subtext}</p>
                   </div>
                 </div>
               </div>
