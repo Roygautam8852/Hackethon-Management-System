@@ -223,7 +223,32 @@ const getChatContacts = asyncHandler(async (req, res) => {
     }
   });
 
-  res.status(200).json(new ApiResponse(200, { contacts: Array.from(uniqueMap.values()) }, "Contacts fetched successfully"));
+  // Calculate unread direct message counts for currentUser
+  const unreadCounts = await Message.aggregate([
+    {
+      $match: {
+        recipient: currentUser._id,
+        read: false,
+        chatType: "direct",
+      },
+    },
+    {
+      $group: {
+        _id: "$sender",
+        count: { $sum: 1 },
+      },
+    },
+  ]);
+
+  const unreadMap = new Map();
+  unreadCounts.forEach(u => unreadMap.set(u._id.toString(), u.count));
+
+  const finalContacts = Array.from(uniqueMap.values()).map(c => ({
+    ...c,
+    unreadCount: unreadMap.get(c._id) || 0,
+  }));
+
+  res.status(200).json(new ApiResponse(200, { contacts: finalContacts }, "Contacts fetched successfully"));
 });
 
 // @desc    Get 1-to-1 direct messages between current user and target user
@@ -232,6 +257,12 @@ const getChatContacts = asyncHandler(async (req, res) => {
 const getDirectMessages = asyncHandler(async (req, res) => {
   const { userId } = req.params;
   const currentUserId = req.user._id;
+
+  // Mark all unread messages from this sender as read
+  await Message.updateMany(
+    { sender: userId, recipient: currentUserId, read: false },
+    { $set: { read: true } }
+  );
 
   const messages = await Message.find({
     chatType: "direct",
@@ -269,10 +300,26 @@ const sendDirectMessage = asyncHandler(async (req, res) => {
   res.status(201).json(new ApiResponse(201, { message }, "Direct message sent"));
 });
 
+// @desc    Mark direct messages as read
+// @route   PATCH /api/messages/direct/:userId/read
+// @access  Private
+const markDirectMessagesAsRead = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+  const currentUserId = req.user._id;
+
+  await Message.updateMany(
+    { sender: userId, recipient: currentUserId, read: false },
+    { $set: { read: true } }
+  );
+
+  res.status(200).json(new ApiResponse(200, {}, "Messages marked as read"));
+});
+
 module.exports = {
   sendMessage,
   getMessages,
   getChatContacts,
   getDirectMessages,
   sendDirectMessage,
+  markDirectMessagesAsRead,
 };

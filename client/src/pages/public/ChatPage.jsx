@@ -146,6 +146,16 @@ const ChatPage = () => {
 
   const categories = categoryMap[user?.role] || ["All", "Organizers"];
 
+  const handleSelectContact = (contact) => {
+    setActiveContact(contact);
+    if (contact.unreadCount > 0) {
+      messageAPI.markRead(contact._id).catch(console.error);
+      setContacts((prev) =>
+        prev.map((c) => (c._id === contact._id ? { ...c, unreadCount: 0 } : c))
+      );
+    }
+  };
+
   return (
     <DashboardLayout>
       <div className="h-[calc(100vh-6rem)] bg-[#09090b] border border-zinc-800 rounded-2xl overflow-hidden flex shadow-2xl">
@@ -223,7 +233,7 @@ const ChatPage = () => {
                 return (
                   <button
                     key={contact._id}
-                    onClick={() => setActiveContact(contact)}
+                    onClick={() => handleSelectContact(contact)}
                     className={`w-full text-left p-3 flex items-center gap-3 transition-colors cursor-pointer ${
                       isActive ? "bg-zinc-800/90 border-l-4 border-indigo-500" : "hover:bg-zinc-900/60"
                     }`}
@@ -241,7 +251,14 @@ const ChatPage = () => {
 
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-1 mb-0.5">
-                        <h4 className="text-xs font-bold text-white truncate">{contact.name}</h4>
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <h4 className="text-xs font-bold text-white truncate">{contact.name}</h4>
+                          {contact.unreadCount > 0 && (
+                            <span className="bg-red-600 text-white text-[10px] font-black px-1.5 py-0.2 rounded-full border border-red-500 shadow-sm animate-bounce flex-shrink-0">
+                              {contact.unreadCount > 9 ? "9+" : contact.unreadCount}
+                            </span>
+                          )}
+                        </div>
                         <span className={`text-[9px] px-1.5 py-0.2 rounded-full border font-extrabold uppercase ${badgeStyle}`}>
                           {contact.role}
                         </span>

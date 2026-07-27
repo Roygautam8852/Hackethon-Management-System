@@ -102,4 +102,5 @@ export const messageAPI = {
   getContacts: () => api.get("/messages/contacts"),
   getDirect: (userId) => api.get(`/messages/direct/${userId}`),
   sendDirect: (data) => api.post("/messages/direct", data),
+  markRead: (userId) => api.patch(`/messages/direct/${userId}/read`),
 };
