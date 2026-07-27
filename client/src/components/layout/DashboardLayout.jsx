@@ -90,6 +90,19 @@ const DashboardLayout = ({ children }) => {
           </div>
         </header>
 
+        {/* Pending Approval Warning Banner for Organizers and Judges */}
+        {(user?.role === "organizer" || user?.role === "judge") && user?.isApproved === false && (
+          <div className="bg-amber-500/10 border-b border-amber-500/30 px-4 sm:px-8 py-3 flex items-center justify-between text-xs text-amber-200">
+            <div className="flex items-center gap-2.5 max-w-5xl">
+              <span className="p-1.5 bg-amber-500/20 rounded-lg text-amber-400 font-bold text-base flex-shrink-0">⚠️</span>
+              <div>
+                <span className="font-bold text-amber-300">Account Pending Admin Approval: </span>
+                <span>Your request to register as an <strong className="capitalize">{user?.role}</strong> is currently pending administrator approval. Dashboard management features remain locked until an admin approves your account.</span>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Dashboard Main Content Body */}
         <div className="flex-1 p-4 sm:p-8 lg:p-10 w-full max-w-[1600px] mx-auto pb-24 lg:pb-12">
           {children}

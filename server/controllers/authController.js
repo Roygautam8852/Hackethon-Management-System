@@ -30,8 +30,9 @@ const signup = asyncHandler(async (req, res) => {
   // Only allow participant/organizer/judge on public signup
   const allowedRoles = ["participant", "organizer", "judge"];
   const userRole = allowedRoles.includes(role) ? role : "participant";
+  const isApproved = userRole === "participant" || userRole === "admin";
 
-  const user = await User.create({ name, email, password, role: userRole });
+  const user = await User.create({ name, email, password, role: userRole, isApproved });
   const token = generateToken(user._id);
 
   res.cookie("token", token, cookieOptions);

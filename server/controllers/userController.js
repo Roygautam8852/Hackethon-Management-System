@@ -18,6 +18,7 @@ const getAllUsers = asyncHandler(async (req, res) => {
   }
   if (role) query.role = role;
   if (isBlocked !== undefined) query.isBlocked = isBlocked === "true";
+  if (isApproved !== undefined) query.isApproved = isApproved === "true";
 
   const skip = (Number(page) - 1) * Number(limit);
   const [users, total] = await Promise.all([
@@ -96,6 +97,22 @@ const toggleBlockUser = asyncHandler(async (req, res) => {
   );
 });
 
+// @desc    Approve / Revoke user approval (Organizer / Judge)
+// @route   PATCH /api/users/:id/approve
+// @access  Admin
+const toggleApproveUser = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.params.id);
+  if (!user) throw new ApiError(404, "User not found");
+
+  user.isApproved = !user.isApproved;
+  await user.save();
+
+  const action = user.isApproved ? "approved" : "unapproved";
+  res.status(200).json(
+    new ApiResponse(200, { user }, `User has been ${action}`)
+  );
+});
+
 // @desc    Platform analytics (Admin)
 // @route   GET /api/users/analytics
 // @access  Admin
@@ -115,6 +132,7 @@ const getAnalytics = asyncHandler(async (req, res) => {
     hackathonsByStatus,
     recentUsers,
     registrationsByStatus,
+    pendingApprovals,
   ] = await Promise.all([
     User.countDocuments(),
     Hackathon.countDocuments(),
@@ -125,6 +143,7 @@ const getAnalytics = asyncHandler(async (req, res) => {
     Hackathon.aggregate([{ $group: { _id: "$status", count: { $sum: 1 } } }]),
     User.find().sort({ createdAt: -1 }).limit(5).select("name email role avatar createdAt"),
     Registration.aggregate([{ $group: { _id: "$status", count: { $sum: 1 } } }]),
+    User.countDocuments({ role: { $in: ["organizer", "judge"] }, isApproved: false }),
   ]);
 
   res.status(200).json(
@@ -138,6 +157,7 @@ const getAnalytics = asyncHandler(async (req, res) => {
       hackathonsByStatus,
       registrationsByStatus,
       recentUsers,
+      pendingApprovals,
     }, "Analytics fetched")
   );
 });
@@ -148,5 +168,6 @@ module.exports = {
   updateUser,
   deleteUser,
   toggleBlockUser,
+  toggleApproveUser,
   getAnalytics,
 };

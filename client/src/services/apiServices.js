@@ -18,6 +18,7 @@ export const userAPI = {
   updateRole: (id, role) => api.put(`/users/${id}`, { role }),
   delete: (id) => api.delete(`/users/${id}`),
   toggleBlock: (id) => api.patch(`/users/${id}/block`),
+  toggleApprove: (id) => api.patch(`/users/${id}/approve`),
   getAnalytics: () => api.get("/users/analytics"),
 };
 

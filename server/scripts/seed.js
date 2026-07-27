@@ -37,6 +37,7 @@ const seedDatabase = async () => {
       email: "organizer@hacklytics.com",
       password: "Password123!",
       role: "organizer",
+      isApproved: true,
       bio: "Lead Hackathon Director at Tech Campus Union.",
     });
 
@@ -45,6 +46,7 @@ const seedDatabase = async () => {
       email: "judge@hacklytics.com",
       password: "Password123!",
       role: "judge",
+      isApproved: true,
       bio: "Principal AI Research Scientist & Hackathon Evaluator.",
     });
 

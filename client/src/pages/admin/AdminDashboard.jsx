@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import { userAPI } from "../../services/apiServices";
 import {
   HiOutlineUsers, HiOutlineCollection, HiOutlineUserGroup,
-  HiOutlineDocumentText, HiOutlineClipboardList,
+  HiOutlineDocumentText, HiOutlineClipboardList, HiOutlineCheckCircle,
 } from "react-icons/hi";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -99,6 +100,33 @@ const AdminDashboard = () => {
           </div>
           <span className="badge badge-danger text-[10px]">System Administrator</span>
         </div>
+
+        {/* Pending Approvals Widget */}
+        {analytics?.pendingApprovals > 0 && (
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-xl flex-shrink-0 font-bold">
+                ⌛
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-amber-300">
+                  {analytics.pendingApprovals} Pending Account Approval{analytics.pendingApprovals > 1 ? "s" : ""}
+                </h4>
+                <p className="text-xs text-amber-200/80 mt-0.5">
+                  Organizers or Judges have registered and are waiting for your approval to manage hackathons.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Link to="/admin/organizers" className="btn-secondary text-xs px-3 py-1.5 whitespace-nowrap">
+                Organizers
+              </Link>
+              <Link to="/admin/judges" className="btn-primary text-xs px-3 py-1.5 whitespace-nowrap">
+                Review Judges
+              </Link>
+            </div>
+          </div>
+        )}
 
         {/* Compact Stats Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">

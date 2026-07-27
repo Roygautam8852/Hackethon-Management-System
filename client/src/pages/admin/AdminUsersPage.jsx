@@ -49,6 +49,16 @@ const AdminUsersPage = () => {
     return () => clearTimeout(t);
   }, [search, roleFilter, page]);
 
+  const handleApprove = async (id, currentApproved) => {
+    try {
+      await userAPI.toggleApprove(id);
+      toast.success(!currentApproved ? "User approved successfully!" : "User approval revoked");
+      fetchUsers();
+    } catch (e) {
+      toast.error(e.response?.data?.message || "Failed to update approval status");
+    }
+  };
+
   const handleBlock = async (id, isBlocked) => {
     try {
       await userAPI.toggleBlock(id);
@@ -133,6 +143,7 @@ const AdminUsersPage = () => {
                 <tr>
                   <th>User</th>
                   <th>Role</th>
+                  <th>Approval</th>
                   <th>Status</th>
                   <th>Joined</th>
                   <th>Actions</th>
@@ -142,7 +153,7 @@ const AdminUsersPage = () => {
                 {loading
                   ? Array.from({ length: 8 }).map((_, i) => (
                       <tr key={i}>
-                        {Array.from({ length: 5 }).map((_, j) => (
+                        {Array.from({ length: 6 }).map((_, j) => (
                           <td key={j}><div className="skeleton h-4 rounded" /></td>
                         ))}
                       </tr>
@@ -162,6 +173,17 @@ const AdminUsersPage = () => {
                         </td>
                         <td><span className={`badge ${roleColors[u.role]}`}>{u.role}</span></td>
                         <td>
+                          {u.role === "organizer" || u.role === "judge" ? (
+                            u.isApproved !== false ? (
+                              <span className="badge badge-success text-[10px]">Approved</span>
+                            ) : (
+                              <span className="badge badge-warning text-[10px] animate-pulse">Pending</span>
+                            )
+                          ) : (
+                            <span className="text-zinc-600 text-[11px]">N/A</span>
+                          )}
+                        </td>
+                        <td>
                           <span className={`badge ${u.isBlocked ? "badge-danger" : "badge-success"}`}>
                             {u.isBlocked ? "Blocked" : "Active"}
                           </span>
@@ -169,6 +191,15 @@ const AdminUsersPage = () => {
                         <td className="text-slate-500 text-xs">{new Date(u.createdAt).toLocaleDateString()}</td>
                         <td>
                           <div className="flex items-center gap-2">
+                            {(u.role === "organizer" || u.role === "judge") && (
+                              <button
+                                onClick={() => handleApprove(u._id, u.isApproved !== false)}
+                                className={`btn-ghost btn-sm ${u.isApproved !== false ? "text-amber-400" : "text-emerald-400 font-bold"}`}
+                                title={u.isApproved !== false ? "Revoke Approval" : "Approve Account"}
+                              >
+                                <HiOutlineCheck />
+                              </button>
+                            )}
                             <button
                               onClick={() => openEdit(u)}
                               className="btn-ghost btn-sm text-indigo-400"

@@ -12,6 +12,12 @@ const authorizeRoles = (...roles) => {
         `Role '${req.user.role}' is not allowed to access this resource`
       );
     }
+    if ((req.user.role === "organizer" || req.user.role === "judge") && !req.user.isApproved) {
+      throw new ApiError(
+        403,
+        "Your account is pending admin approval. You cannot perform organizer or judge actions until approved by an admin."
+      );
+    }
     next();
   };
 };

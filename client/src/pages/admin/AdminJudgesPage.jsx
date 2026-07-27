@@ -11,6 +11,7 @@ const AdminJudgesPage = () => {
   const [users, setUsers]       = useState([]);
   const [loading, setLoading]   = useState(true);
   const [search, setSearch]     = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [page, setPage]         = useState(1);
   const [total, setTotal]       = useState(0);
 
@@ -23,7 +24,11 @@ const AdminJudgesPage = () => {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const res = await userAPI.getAll({ search, role: "judge", page, limit: 20 });
+      const params = { search, role: "judge", page, limit: 20 };
+      if (statusFilter === "approved") params.isApproved = true;
+      if (statusFilter === "pending") params.isApproved = false;
+
+      const res = await userAPI.getAll(params);
       const d = res.data.data;
       setUsers(d.users || []);
       setTotal(d.total || 0);
@@ -37,7 +42,17 @@ const AdminJudgesPage = () => {
   useEffect(() => {
     const t = setTimeout(fetchUsers, 300);
     return () => clearTimeout(t);
-  }, [search, page]);
+  }, [search, statusFilter, page]);
+
+  const handleApprove = async (id, currentApproved) => {
+    try {
+      await userAPI.toggleApprove(id);
+      toast.success(!currentApproved ? "Judge approved successfully!" : "Judge approval revoked");
+      fetchUsers();
+    } catch (e) {
+      toast.error(e.response?.data?.message || "Failed to update approval status");
+    }
+  };
 
   const handleBlock = async (id, isBlocked) => {
     try {
@@ -84,14 +99,14 @@ const AdminJudgesPage = () => {
             <h1 className="text-xl font-extrabold text-white flex items-center gap-2">
               <HiOutlineScale className="text-amber-400" /> Platform Judges
             </h1>
-            <p className="text-zinc-400 text-xs mt-0.5">Manage all registered judges and project evaluators</p>
+            <p className="text-zinc-400 text-xs mt-0.5">Manage and approve registered judges and project evaluators</p>
           </div>
           <span className="badge badge-warning text-[10px]">{total} Judges</span>
         </div>
 
         {/* Filter Bar */}
-        <div className="flex items-center gap-3">
-          <div className="relative flex-1">
+        <div className="flex flex-col sm:flex-row items-center gap-3">
+          <div className="relative flex-1 w-full">
             <HiOutlineSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 text-sm" />
             <input
               type="text"
@@ -101,6 +116,15 @@ const AdminJudgesPage = () => {
               className="input-field text-xs pl-9 py-2"
             />
           </div>
+          <select
+            value={statusFilter}
+            onChange={e => { setStatusFilter(e.target.value); setPage(1); }}
+            className="input-field text-xs py-2 w-full sm:w-44 font-semibold"
+          >
+            <option value="all">All Approval Status</option>
+            <option value="approved">Approved Only</option>
+            <option value="pending">Pending Approval</option>
+          </select>
         </div>
 
         {/* Table */}
@@ -110,6 +134,7 @@ const AdminJudgesPage = () => {
               <thead>
                 <tr>
                   <th>Judge</th>
+                  <th>Approval</th>
                   <th>Status</th>
                   <th>Joined</th>
                   <th className="text-right">Actions</th>
@@ -117,9 +142,9 @@ const AdminJudgesPage = () => {
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan={4} className="text-center py-10"><div className="spinner mx-auto" /></td></tr>
+                  <tr><td colSpan={5} className="text-center py-10"><div className="spinner mx-auto" /></td></tr>
                 ) : users.length === 0 ? (
-                  <tr><td colSpan={4} className="text-center text-zinc-500 py-10">No judges found</td></tr>
+                  <tr><td colSpan={5} className="text-center text-zinc-500 py-10">No judges found</td></tr>
                 ) : (
                   users.map(u => (
                     <tr key={u._id}>
@@ -135,6 +160,13 @@ const AdminJudgesPage = () => {
                         </div>
                       </td>
                       <td>
+                        {u.isApproved !== false ? (
+                          <span className="badge badge-success text-[10px]">Approved</span>
+                        ) : (
+                          <span className="badge badge-warning text-[10px] animate-pulse">Pending Approval</span>
+                        )}
+                      </td>
+                      <td>
                         {u.isBlocked ? (
                           <span className="badge badge-danger text-[10px]">Blocked</span>
                         ) : (
@@ -146,6 +178,13 @@ const AdminJudgesPage = () => {
                       </td>
                       <td className="text-right">
                         <div className="flex items-center justify-end gap-1">
+                          <button
+                            onClick={() => handleApprove(u._id, u.isApproved !== false)}
+                            className={`btn-ghost text-xs p-1.5 ${u.isApproved !== false ? "text-amber-400 hover:text-amber-300" : "text-emerald-400 hover:text-emerald-300 font-bold"}`}
+                            title={u.isApproved !== false ? "Revoke Approval" : "Approve Judge"}
+                          >
+                            <HiOutlineCheck className="text-sm" />
+                          </button>
                           <button
                             onClick={() => { setEditUser(u); setEditRole(u.role); setEditName(u.name); }}
                             className="btn-ghost text-xs p-1.5 text-zinc-400 hover:text-white"

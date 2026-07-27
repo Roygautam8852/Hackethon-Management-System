@@ -12,6 +12,7 @@ const initAccounts = async () => {
       email: "admin@hacklytics.com",
       password: "Password123!",
       role: "admin",
+      isApproved: true,
       bio: "Platform Administrator",
     },
     {
@@ -19,6 +20,7 @@ const initAccounts = async () => {
       email: "organizer@hacklytics.com",
       password: "Password123!",
       role: "organizer",
+      isApproved: true,
       bio: "Event Director",
     },
     {
@@ -26,6 +28,7 @@ const initAccounts = async () => {
       email: "judge@hacklytics.com",
       password: "Password123!",
       role: "judge",
+      isApproved: true,
       bio: "Project Evaluator",
     },
     {
@@ -33,6 +36,7 @@ const initAccounts = async () => {
       email: "participant@hacklytics.com",
       password: "Password123!",
       role: "participant",
+      isApproved: true,
       bio: "Developer & Hacker",
     },
   ];
