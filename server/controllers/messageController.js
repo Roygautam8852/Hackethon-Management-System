@@ -223,6 +223,37 @@ const getChatContacts = asyncHandler(async (req, res) => {
     }
   });
 
+  const contactsArray = Array.from(uniqueMap.values());
+
+  // Attach actual hackathon titles for all organizer contacts
+  const organizerIds = contactsArray
+    .filter(c => c.role === "organizer")
+    .map(c => c._id);
+
+  if (organizerIds.length > 0) {
+    const hackathons = await Hackathon.find({ organizer: { $in: organizerIds } }).select("title organizer");
+    const hackathonMap = new Map();
+    hackathons.forEach(h => {
+      if (h.organizer) {
+        const orgId = h.organizer.toString();
+        const titles = hackathonMap.get(orgId) || [];
+        titles.push(h.title);
+        hackathonMap.set(orgId, titles);
+      }
+    });
+
+    contactsArray.forEach(c => {
+      if (c.role === "organizer") {
+        const titles = hackathonMap.get(c._id);
+        if (titles && titles.length > 0) {
+          c.subtext = `Hackathon: ${titles.slice(0, 2).join(", ")}`;
+        } else if (!c.subtext || c.subtext === "Hackathon Organizer" || c.subtext === "Platform Organizer") {
+          c.subtext = "Organizer (No active event)";
+        }
+      }
+    });
+  }
+
   // Calculate unread direct message counts for currentUser
   const unreadCounts = await Message.aggregate([
     {
@@ -282,7 +313,7 @@ const getChatContacts = asyncHandler(async (req, res) => {
     }
   });
 
-  const finalContacts = Array.from(uniqueMap.values()).map(c => {
+  const finalContacts = contactsArray.map(c => {
     const lastMsg = lastMessageMap.get(c._id);
     return {
       ...c,
