@@ -202,16 +202,14 @@ const getChatContacts = asyncHandler(async (req, res) => {
         });
       });
     } else if (currentUser.role === "admin") {
-      // Admin: get all organizers, judges, participants
-      const [allOrganizers, allJudges, allParticipants] = await Promise.all([
+      // Admin: get all organizers and judges ONLY
+      const [allOrganizers, allJudges] = await Promise.all([
         User.find({ role: "organizer", _id: { $ne: currentUser._id } }).select("name email avatar role"),
         User.find({ role: "judge", _id: { $ne: currentUser._id } }).select("name email avatar role"),
-        User.find({ role: "participant", _id: { $ne: currentUser._id } }).select("name email avatar role").limit(30),
       ]);
 
       allOrganizers.forEach(o => contacts.push({ _id: o._id.toString(), name: o.name, email: o.email, avatar: o.avatar, role: o.role, category: "Organizers", subtext: "Platform Organizer", type: "direct" }));
       allJudges.forEach(j => contacts.push({ _id: j._id.toString(), name: j.name, email: j.email, avatar: j.avatar, role: j.role, category: "Judges", subtext: "Platform Judge", type: "direct" }));
-      allParticipants.forEach(p => contacts.push({ _id: p._id.toString(), name: p.name, email: p.email, avatar: p.avatar, role: p.role, category: "Participants & Teams", subtext: "Hacker / Developer", type: "direct" }));
     }
   }
 
