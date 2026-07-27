@@ -21,7 +21,7 @@ const adminLinks = [
   { label: "Users (All)", href: "/admin/users", icon: HiOutlineUsers },
   { label: "Hackathons", href: "/admin/hackathons", icon: HiOutlineCollection },
   { label: "Analytics", href: "/admin/analytics", icon: HiOutlineChartBar },
-  { label: "Direct & Group Chat", href: "/chat", icon: HiOutlineChatAlt2 },
+  { label: "Chat", href: "/chat", icon: HiOutlineChatAlt2 },
   { label: "My Profile", href: "/profile", icon: HiOutlineUser },
 ];
 
@@ -33,7 +33,7 @@ const organizerLinks = [
   { label: "Submissions", href: "/organizer/submissions", icon: HiOutlineDocumentText },
   { label: "Judges", href: "/organizer/judges", icon: HiOutlineStar },
   { label: "Announce Winners", href: "/organizer/announce-winners", icon: RiTrophyLine },
-  { label: "Direct & Group Chat", href: "/chat", icon: HiOutlineChatAlt2 },
+  { label: "Chat", href: "/chat", icon: HiOutlineChatAlt2 },
   { label: "My Profile", href: "/profile", icon: HiOutlineUser },
 ];
 
@@ -43,7 +43,7 @@ const participantLinks = [
   { label: "My Team", href: "/participant/team", icon: HiOutlineUserGroup },
   { label: "My Submission", href: "/participant/submission", icon: HiOutlinePencilAlt },
   { label: "Results", href: "/participant/results", icon: RiTrophyLine },
-  { label: "Direct & Group Chat", href: "/chat", icon: HiOutlineChatAlt2 },
+  { label: "Chat", href: "/chat", icon: HiOutlineChatAlt2 },
   { label: "My Profile", href: "/profile", icon: HiOutlineUser },
 ];
 

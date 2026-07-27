@@ -70,7 +70,7 @@ const DashboardLayout = ({ children }) => {
               className="hidden lg:flex relative items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-extrabold text-indigo-300 bg-indigo-500/15 border border-indigo-500/40 hover:bg-indigo-500/25 transition-all shadow-sm"
             >
               <HiOutlineChatAlt2 className="text-base text-indigo-400" />
-              <span>💬 Messages & Chat</span>
+              <span>💬 Chat</span>
             </Link>
 
             {/* Back to Home Button */}

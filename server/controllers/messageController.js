@@ -75,8 +75,18 @@ const getChatContacts = asyncHandler(async (req, res) => {
   let contacts = [];
 
   if (currentUser.role === "participant") {
-    // Participant: ONLY get organizers of hackathons in which this participant has registered
-    const myRegistrations = await Registration.find({ user: currentUser._id }).populate({
+    // Participant: ONLY get organizers of hackathons in which this participant or their team is registered
+    const userTeams = await Team.find({
+      $or: [{ leader: currentUser._id }, { members: currentUser._id }],
+    }).select("_id");
+    const teamIds = userTeams.map(t => t._id);
+
+    const myRegistrations = await Registration.find({
+      $or: [
+        { registeredBy: currentUser._id },
+        { team: { $in: teamIds } }
+      ]
+    }).populate({
       path: "hackathon",
       populate: { path: "organizer", select: "name email avatar role" }
     });
@@ -95,17 +105,6 @@ const getChatContacts = asyncHandler(async (req, res) => {
           subtext: `Hackathon: ${h.title}`,
           hackathonId: h._id,
           type: "direct",
-        });
-
-        contacts.push({
-          _id: `group_${h._id}`,
-          name: `${h.title} (Group Channel)`,
-          avatar: h.bannerImage || "",
-          role: "group",
-          category: "Group Channels",
-          subtext: "Registered Hackathon Forum",
-          hackathonId: h._id,
-          type: "group",
         });
       }
     });

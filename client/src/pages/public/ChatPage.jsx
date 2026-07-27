@@ -132,13 +132,13 @@ const ChatPage = () => {
   });
 
   const categoryMap = {
-    participant: ["All", "Organizers", "Group Channels"],
+    participant: ["All", "Organizers"],
     organizer: ["All", "Judges", "Participants & Teams", "Admins", "Group Channels"],
     judge: ["All", "Organizers", "Admins"],
     admin: ["All", "Organizers", "Judges", "Participants & Teams", "Group Channels"],
   };
 
-  const categories = categoryMap[user?.role] || ["All", "Organizers", "Group Channels"];
+  const categories = categoryMap[user?.role] || ["All", "Organizers"];
 
   return (
     <DashboardLayout>
