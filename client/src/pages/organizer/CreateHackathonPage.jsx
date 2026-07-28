@@ -170,7 +170,7 @@ const CreateHackathonPage = () => {
 
   return (
     <DashboardLayout>
-      <div className="max-w-3xl mx-auto pb-16 sm:pb-8">
+      <div className="max-w-3xl mx-auto pb-24 sm:pb-8">
         <div className="mb-4 sm:mb-6">
           <h1 className="text-xl sm:text-2xl font-bold text-slate-100">Create Hackathon</h1>
           <p className="text-slate-500 text-xs sm:text-sm">Fill in the details to launch your hackathon.</p>
@@ -277,9 +277,11 @@ const CreateHackathonPage = () => {
               {errors.description && <p className="input-error mt-1 text-xs text-red-400">⚠ {errors.description.message}</p>}
             </div>
 
-            <button type="button" onClick={handleNextStep1} className="btn-primary w-full sm:w-auto justify-center">
-              Next: Details →
-            </button>
+            <div className="pt-2 flex justify-end">
+              <button type="button" onClick={handleNextStep1} className="btn-primary w-full sm:w-auto justify-center text-xs sm:text-sm py-3 px-5">
+                Next: Details →
+              </button>
+            </div>
           </div>
 
           {/* Step 2: Details & Dates */}
@@ -403,11 +405,11 @@ const CreateHackathonPage = () => {
               <input {...register("tags")} className="input-field" placeholder="ai, machine-learning, web3" />
             </div>
 
-            <div className="flex gap-3 pt-2">
-              <button type="button" onClick={() => setActiveStep(1)} className="btn-secondary flex-1 sm:flex-initial">
+            <div className="flex flex-col-reverse sm:flex-row gap-2.5 sm:gap-3 pt-2">
+              <button type="button" onClick={() => setActiveStep(1)} className="btn-secondary w-full sm:w-auto justify-center text-xs sm:text-sm py-3 px-5">
                 ← Back
               </button>
-              <button type="button" onClick={handleNextStep2} className="btn-primary flex-1 sm:flex-initial">
+              <button type="button" onClick={handleNextStep2} className="btn-primary w-full sm:flex-1 justify-center text-xs sm:text-sm py-3 px-5">
                 Next: Rules →
               </button>
             </div>
@@ -515,14 +517,14 @@ const CreateHackathonPage = () => {
               </div>
             </div>
 
-            <div className="flex gap-3 pt-2">
-              <button type="button" onClick={() => setActiveStep(2)} className="btn-secondary">
+            <div className="flex flex-col-reverse sm:flex-row gap-2.5 sm:gap-3 pt-2">
+              <button type="button" onClick={() => setActiveStep(2)} className="btn-secondary w-full sm:w-auto justify-center text-xs sm:text-sm py-3 px-5">
                 ← Back
               </button>
-              <button type="submit" disabled={submitting} className="btn-primary flex-1 justify-center">
+              <button type="submit" disabled={submitting} className="btn-primary w-full sm:flex-1 justify-center text-xs sm:text-sm py-3 px-4 text-center">
                 {submitting ? (
                   <>
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
                     Creating...
                   </>
                 ) : (
