@@ -170,20 +170,20 @@ const CreateHackathonPage = () => {
 
   return (
     <DashboardLayout>
-      <div className="max-w-3xl">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-slate-100">Create Hackathon</h1>
-          <p className="text-slate-500 text-sm">Fill in the details to launch your hackathon.</p>
+      <div className="max-w-3xl mx-auto pb-16 sm:pb-8">
+        <div className="mb-4 sm:mb-6">
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-100">Create Hackathon</h1>
+          <p className="text-slate-500 text-xs sm:text-sm">Fill in the details to launch your hackathon.</p>
         </div>
 
-        {/* Step indicator */}
-        <div className="flex items-center gap-0 mb-8">
+        {/* Step indicator - Touch friendly & responsive horizontal scroll */}
+        <div className="flex items-center gap-1 sm:gap-2 mb-6 sm:mb-8 overflow-x-auto pb-2 scrollbar-none">
           {steps.map((s, i) => (
-            <div key={s} className="flex items-center">
+            <div key={s} className="flex items-center flex-shrink-0">
               <button
                 type="button"
                 onClick={() => handleStepClick(i + 1)}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${
                   activeStep === i + 1
                     ? "bg-indigo-500/15 text-indigo-400 border border-indigo-500/30"
                     : activeStep > i + 1
@@ -192,7 +192,7 @@ const CreateHackathonPage = () => {
                 }`}
               >
                 <span
-                  className={`w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center ${
+                  className={`w-4 h-4 sm:w-5 sm:h-5 rounded-full text-[10px] sm:text-xs font-bold flex items-center justify-center ${
                     activeStep > i + 1
                       ? "bg-emerald-500 text-white"
                       : activeStep === i + 1
@@ -204,27 +204,27 @@ const CreateHackathonPage = () => {
                 </span>
                 {s}
               </button>
-              {i < steps.length - 1 && <div className="w-8 h-px bg-slate-800 mx-1" />}
+              {i < steps.length - 1 && <div className="w-4 sm:w-8 h-px bg-slate-800 mx-1 flex-shrink-0" />}
             </div>
           ))}
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-4 sm:space-y-6">
           {/* Step 1: Basic Info */}
-          <div className={activeStep === 1 ? "card space-y-5" : "hidden"}>
+          <div className={activeStep === 1 ? "card space-y-4 sm:space-y-5 p-4 sm:p-6" : "hidden"}>
             {/* Banner */}
             <div>
               <label className="input-label">Banner Image</label>
               <div
-                className="relative h-40 rounded-xl border-2 border-dashed border-slate-700 bg-slate-900 flex items-center justify-center cursor-pointer hover:border-indigo-500/50 transition-colors overflow-hidden"
+                className="relative h-32 sm:h-40 rounded-xl border-2 border-dashed border-slate-700 bg-slate-900 flex items-center justify-center cursor-pointer hover:border-indigo-500/50 transition-colors overflow-hidden"
                 onClick={() => document.getElementById("banner-input").click()}
               >
                 {bannerPreview ? (
                   <img src={bannerPreview} alt="Banner Preview" className="w-full h-full object-cover" />
                 ) : (
-                  <div className="text-center">
-                    <HiOutlinePhotograph className="text-3xl text-slate-600 mx-auto mb-2" />
-                    <p className="text-sm text-slate-500">Click to upload banner image</p>
+                  <div className="text-center p-3">
+                    <HiOutlinePhotograph className="text-2xl sm:text-3xl text-slate-600 mx-auto mb-1" />
+                    <p className="text-xs sm:text-sm text-slate-500">Click to upload banner image</p>
                   </div>
                 )}
               </div>
@@ -270,20 +270,20 @@ const CreateHackathonPage = () => {
               <label className="input-label">Description *</label>
               <textarea
                 {...register("description")}
-                rows={5}
+                rows={4}
                 className={`input-field resize-none ${errors.description ? "border-red-500 focus:border-red-500" : ""}`}
                 placeholder="Describe your hackathon, its goals, and what participants can expect..."
               />
               {errors.description && <p className="input-error mt-1 text-xs text-red-400">⚠ {errors.description.message}</p>}
             </div>
 
-            <button type="button" onClick={handleNextStep1} className="btn-primary">
+            <button type="button" onClick={handleNextStep1} className="btn-primary w-full sm:w-auto justify-center">
               Next: Details →
             </button>
           </div>
 
           {/* Step 2: Details & Dates */}
-          <div className={activeStep === 2 ? "card space-y-5" : "hidden"}>
+          <div className={activeStep === 2 ? "card space-y-4 sm:space-y-5 p-4 sm:p-6" : "hidden"}>
             {/* Mode */}
             <div>
               <label className="input-label">Mode *</label>
@@ -292,7 +292,7 @@ const CreateHackathonPage = () => {
                   <label key={m} className="cursor-pointer">
                     <input type="radio" value={m} {...register("mode")} className="hidden" />
                     <div
-                      className={`border rounded-lg px-3 py-2 text-center text-sm capitalize transition-colors ${
+                      className={`border rounded-lg px-2 sm:px-3 py-2.5 text-center text-xs sm:text-sm capitalize transition-colors ${
                         currentMode === m
                           ? "bg-indigo-500/20 border-indigo-500 text-indigo-300 font-semibold"
                           : "border-slate-700 text-slate-400 hover:border-indigo-500/50 bg-slate-900/50"
@@ -312,8 +312,8 @@ const CreateHackathonPage = () => {
               <input {...register("venue")} className="input-field" placeholder="e.g. Mumbai, IIT Campus / Online via Discord" />
             </div>
 
-            {/* Dates */}
-            <div className="grid grid-cols-2 gap-4">
+            {/* Dates - Responsive grid to prevent truncating date strings on mobile */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
                 <label className="input-label">Start Date *</label>
                 <input
@@ -346,8 +346,8 @@ const CreateHackathonPage = () => {
               )}
             </div>
 
-            {/* Team size */}
-            <div className="grid grid-cols-2 gap-4">
+            {/* Team size - Responsive grid */}
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div>
                 <label className="input-label">Min Team Size</label>
                 <input
@@ -378,8 +378,8 @@ const CreateHackathonPage = () => {
               <input {...register("prizePool")} className="input-field" placeholder="e.g. ₹1,00,000 / $5000" />
             </div>
 
-            {/* Contact */}
-            <div className="grid grid-cols-2 gap-4">
+            {/* Contact - Responsive grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
                 <label className="input-label">Website</label>
                 <input {...register("website")} className="input-field" placeholder="https://..." />
@@ -403,29 +403,29 @@ const CreateHackathonPage = () => {
               <input {...register("tags")} className="input-field" placeholder="ai, machine-learning, web3" />
             </div>
 
-            <div className="flex gap-3">
-              <button type="button" onClick={() => setActiveStep(1)} className="btn-secondary">
+            <div className="flex gap-3 pt-2">
+              <button type="button" onClick={() => setActiveStep(1)} className="btn-secondary flex-1 sm:flex-initial">
                 ← Back
               </button>
-              <button type="button" onClick={handleNextStep2} className="btn-primary">
+              <button type="button" onClick={handleNextStep2} className="btn-primary flex-1 sm:flex-initial">
                 Next: Rules →
               </button>
             </div>
           </div>
 
           {/* Step 3: Rules & Judging Criteria */}
-          <div className={activeStep === 3 ? "space-y-5" : "hidden"}>
+          <div className={activeStep === 3 ? "space-y-4 sm:space-y-5" : "hidden"}>
             {/* Rules */}
-            <div className="card space-y-3">
+            <div className="card space-y-3 p-4 sm:p-6">
               <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-slate-200">Rules</h3>
+                <h3 className="font-semibold text-slate-200 text-sm sm:text-base">Rules</h3>
                 <button type="button" onClick={() => setRules([...rules, ""])} className="btn-ghost btn-sm">
                   <HiOutlinePlus /> Add Rule
                 </button>
               </div>
               {rules.map((r, i) => (
-                <div key={i} className="flex gap-2">
-                  <span className="w-6 text-center text-slate-500 text-sm pt-2.5">{i + 1}.</span>
+                <div key={i} className="flex gap-2 items-center">
+                  <span className="w-5 text-center text-slate-500 text-xs sm:text-sm font-semibold">{i + 1}.</span>
                   <input
                     value={r}
                     onChange={(e) => {
@@ -434,13 +434,13 @@ const CreateHackathonPage = () => {
                       setRules(updated);
                     }}
                     placeholder={`Rule ${i + 1}`}
-                    className="input-field flex-1"
+                    className="input-field flex-1 text-xs sm:text-sm"
                   />
                   {rules.length > 1 && (
                     <button
                       type="button"
                       onClick={() => setRules(rules.filter((_, idx) => idx !== i))}
-                      className="btn-ghost btn-sm text-red-400 hover:text-red-300"
+                      className="btn-ghost btn-sm text-red-400 hover:text-red-300 min-w-[36px] px-2"
                     >
                       <HiOutlineTrash />
                     </button>
@@ -450,9 +450,9 @@ const CreateHackathonPage = () => {
             </div>
 
             {/* Judging Criteria */}
-            <div className="card space-y-3">
+            <div className="card space-y-3 p-4 sm:p-6">
               <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-slate-200">Judging Criteria</h3>
+                <h3 className="font-semibold text-slate-200 text-sm sm:text-base">Judging Criteria</h3>
                 <button
                   type="button"
                   onClick={() => setCriteria([...criteria, { criterion: "", maxMarks: 20, description: "" }])}
@@ -462,8 +462,8 @@ const CreateHackathonPage = () => {
                 </button>
               </div>
               {criteria.map((c, i) => (
-                <div key={i} className="p-3 bg-slate-900 rounded-lg border border-slate-800 space-y-2">
-                  <div className="flex gap-2">
+                <div key={i} className="p-3 bg-slate-900/80 rounded-lg border border-slate-800 space-y-2">
+                  <div className="flex gap-2 items-center">
                     <input
                       value={c.criterion}
                       onChange={(e) => {
@@ -472,9 +472,9 @@ const CreateHackathonPage = () => {
                         setCriteria(u);
                       }}
                       placeholder="e.g. Innovation"
-                      className="input-field flex-1"
+                      className="input-field flex-1 text-xs sm:text-sm"
                     />
-                    <div className="w-24">
+                    <div className="w-20 sm:w-24 flex-shrink-0">
                       <input
                         type="number"
                         value={c.maxMarks}
@@ -484,15 +484,15 @@ const CreateHackathonPage = () => {
                           setCriteria(u);
                         }}
                         min={1}
-                        className="input-field"
-                        placeholder="Max pts"
+                        className="input-field text-xs sm:text-sm px-2 text-center"
+                        placeholder="Pts"
                       />
                     </div>
                     {criteria.length > 1 && (
                       <button
                         type="button"
                         onClick={() => setCriteria(criteria.filter((_, idx) => idx !== i))}
-                        className="btn-ghost btn-sm text-red-400 hover:text-red-300"
+                        className="btn-ghost btn-sm text-red-400 hover:text-red-300 min-w-[36px] px-2"
                       >
                         <HiOutlineTrash />
                       </button>
@@ -510,12 +510,12 @@ const CreateHackathonPage = () => {
                   />
                 </div>
               ))}
-              <div className="text-right text-sm text-slate-400">
+              <div className="text-right text-xs sm:text-sm text-slate-400 font-medium">
                 Total: {criteria.reduce((s, c) => s + (c.maxMarks || 0), 0)} pts
               </div>
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex gap-3 pt-2">
               <button type="button" onClick={() => setActiveStep(2)} className="btn-secondary">
                 ← Back
               </button>

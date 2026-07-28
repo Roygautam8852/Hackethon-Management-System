@@ -244,6 +244,7 @@ select:-webkit-autofill:active {
   transition: all 0.2s ease;
   outline: none;
   font-family: inherit;
+  box-sizing: border-box;
 }
 .input-field:focus {
   border-color: #71717a;
@@ -252,6 +253,24 @@ select:-webkit-autofill:active {
 }
 .input-field::placeholder { color: #52525b; }
 .input-field.error { border-color: #ef4444; }
+
+/* Native Date Input styling for dark theme and mobile fit */
+input[type="date"].input-field {
+  color-scheme: dark;
+  padding-right: 0.625rem;
+}
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.8);
+  cursor: pointer;
+  padding: 0.2rem;
+}
+
+@media (max-width: 640px) {
+  .input-field {
+    padding: 0.625rem 0.75rem;
+    font-size: 0.8125rem;
+  }
+}
 
 .input-with-icon-left,
 .input-field.pl-9,
