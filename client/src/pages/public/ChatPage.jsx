@@ -40,8 +40,8 @@ const ChatPage = () => {
   const messagesEndRef = useRef(null);
 
   // Fetch categorized contacts list
-  const fetchContacts = async () => {
-    setLoadingContacts(true);
+  const fetchContacts = async (silent = false) => {
+    if (!silent && contacts.length === 0) setLoadingContacts(true);
     try {
       const res = await messageAPI.getContacts();
       const list = res.data.data.contacts || [];
@@ -54,12 +54,12 @@ const ChatPage = () => {
     } catch (e) {
       toast.error("Failed to load contacts list");
     } finally {
-      setLoadingContacts(false);
+      if (!silent) setLoadingContacts(false);
     }
   };
 
   useEffect(() => {
-    fetchContacts();
+    fetchContacts(false);
   }, []);
 
   // Fetch active conversation messages
@@ -230,10 +230,10 @@ const ChatPage = () => {
 
           {/* Contacts Feed */}
           <div className="flex-1 overflow-y-auto divide-y divide-zinc-800/50">
-            {loadingContacts ? (
+            {loadingContacts && contacts.length === 0 ? (
               <div className="p-6 text-center">
                 <div className="spinner mx-auto" />
-                <p className="text-zinc-500 text-xs mt-2">Loading messages…</p>
+                <p className="text-zinc-500 text-xs mt-2">Loading contacts…</p>
               </div>
             ) : filteredContacts.length === 0 ? (
               <div className="p-8 text-center text-zinc-500 text-xs">

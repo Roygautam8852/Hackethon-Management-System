@@ -35,9 +35,9 @@ const GlobalChatDrawer = ({ isOpen, onClose }) => {
   const messagesEndRef = useRef(null);
 
   // Fetch categorized contacts list
-  const fetchContacts = async () => {
+  const fetchContacts = async (silent = false) => {
     if (!isAuthenticated) return;
-    setLoadingContacts(true);
+    if (!silent && contacts.length === 0) setLoadingContacts(true);
     try {
       const res = await messageAPI.getContacts();
       const list = res.data.data.contacts || [];
@@ -50,14 +50,14 @@ const GlobalChatDrawer = ({ isOpen, onClose }) => {
     } catch (e) {
       console.error("Failed to load contacts", e);
     } finally {
-      setLoadingContacts(false);
+      if (!silent) setLoadingContacts(false);
     }
   };
 
   // Fetch active conversation messages
   const fetchMessages = async (contact, silent = false) => {
     if (!contact || !isAuthenticated) return;
-    if (!silent) setLoadingMessages(true);
+    if (!silent && messages.length === 0) setLoadingMessages(true);
     try {
       if (contact.type === "direct") {
         const res = await messageAPI.getDirect(contact._id);
@@ -76,10 +76,10 @@ const GlobalChatDrawer = ({ isOpen, onClose }) => {
   useEffect(() => {
     if (!isOpen || !isAuthenticated) return;
 
-    fetchContacts();
+    fetchContacts(false);
 
     const timer = setInterval(() => {
-      fetchContacts();
+      fetchContacts(true);
     }, 5000);
 
     return () => clearInterval(timer);
@@ -291,10 +291,10 @@ const GlobalChatDrawer = ({ isOpen, onClose }) => {
 
                 {/* Contacts Feed */}
                 <div className="flex-1 overflow-y-auto divide-y divide-zinc-800/50">
-                  {loadingContacts ? (
+                  {loadingContacts && contacts.length === 0 ? (
                     <div className="p-6 text-center">
                       <div className="spinner mx-auto" />
-                      <p className="text-zinc-500 text-xs mt-2">Loading messages…</p>
+                      <p className="text-zinc-500 text-xs mt-2">Loading contacts…</p>
                     </div>
                   ) : filteredContacts.length === 0 ? (
                     <div className="p-8 text-center text-zinc-500 text-xs">
