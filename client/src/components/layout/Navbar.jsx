@@ -2,15 +2,13 @@ import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../../context/AuthContext";
-import { useChat } from "../../context/ChatContext";
 import {
   HiOutlineMenuAlt3, HiOutlineX,
-  HiOutlineUser, HiOutlineLogout, HiOutlineCog, HiOutlineChatAlt2,
+  HiOutlineUser, HiOutlineLogout, HiOutlineCog,
   HiOutlineCollection, HiOutlineUserGroup,
 } from "react-icons/hi";
 import { RiRocketLine, RiTrophyLine } from "react-icons/ri";
 import toast from "react-hot-toast";
-import GlobalChatDrawer from "../chat/GlobalChatDrawer";
 
 const navLinks = [
   { label: "Hackathons", href: "/hackathons", icon: HiOutlineCollection, iconColor: "text-indigo-400" },
@@ -19,7 +17,6 @@ const navLinks = [
 
 const Navbar = () => {
   const { isAuthenticated, user, logout } = useAuth();
-  const { isChatOpen, openChat, closeChat, unreadCount } = useChat();
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -98,23 +95,6 @@ const Navbar = () => {
               Leaderboard
             </Link>
 
-            {/* 💬 GROUP CHAT BUTTON */}
-            {isAuthenticated && (
-              <button
-                onClick={openChat}
-                className="relative px-3.5 py-2 text-xs font-extrabold text-indigo-300 bg-indigo-500/15 border border-indigo-500/40 hover:bg-indigo-500/25 rounded-lg transition-all flex items-center gap-1.5 shadow-sm cursor-pointer"
-              >
-                <HiOutlineChatAlt2 className="text-sm text-indigo-400" />
-                <span>💬 Group Chat</span>
-
-                {unreadCount > 0 && (
-                  <span className="bg-red-600 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full border border-red-500 ml-0.5">
-                    {unreadCount}
-                  </span>
-                )}
-              </button>
-            )}
-
             {isAuthenticated ? (
               <div className="relative">
                 <button
@@ -192,19 +172,6 @@ const Navbar = () => {
 
           {/* Mobile Right Controls */}
           <div className="flex md:hidden items-center gap-2">
-            {isAuthenticated && (
-              <button
-                onClick={openChat}
-                className="p-2 rounded-xl text-indigo-400 bg-indigo-500/15 border border-indigo-500/30 text-xs font-bold flex items-center gap-1 cursor-pointer"
-              >
-                <HiOutlineChatAlt2 className="text-base" />
-                {unreadCount > 0 && (
-                  <span className="bg-red-600 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full border border-red-500">
-                    {unreadCount}
-                  </span>
-                )}
-              </button>
-            )}
 
             <button
               className="p-2.5 rounded-xl text-zinc-200 hover:text-white bg-zinc-900 border border-zinc-800 transition-all cursor-pointer"
@@ -319,9 +286,6 @@ const Navbar = () => {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Global Group Chat Drawer */}
-      <GlobalChatDrawer isOpen={isChatOpen} onClose={closeChat} />
     </nav>
   );
 };
