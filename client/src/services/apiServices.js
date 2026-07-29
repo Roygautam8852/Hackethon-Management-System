@@ -6,7 +6,10 @@ export const authAPI = {
   login: (data) => api.post("/auth/login", data),
   logout: () => api.post("/auth/logout"),
   getMe: () => api.get("/auth/me"),
-  updateProfile: (data) => api.put("/auth/update-profile", data),
+  updateProfile: (data) =>
+    data instanceof FormData
+      ? api.put("/auth/update-profile", data, { headers: { "Content-Type": "multipart/form-data" } })
+      : api.put("/auth/update-profile", data),
   changePassword: (data) => api.put("/auth/change-password", data),
 };
 
