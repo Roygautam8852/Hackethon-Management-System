@@ -57,7 +57,6 @@ const GlobalChatDrawer = ({ isOpen, onClose }) => {
   // Fetch active conversation messages
   const fetchMessages = async (contact, silent = false) => {
     if (!contact || !isAuthenticated) return;
-    if (!silent && messages.length === 0) setLoadingMessages(true);
     try {
       if (contact.type === "direct") {
         const res = await messageAPI.getDirect(contact._id);
@@ -68,8 +67,6 @@ const GlobalChatDrawer = ({ isOpen, onClose }) => {
       }
     } catch (e) {
       console.error("Failed to load messages", e);
-    } finally {
-      if (!silent) setLoadingMessages(false);
     }
   };
 
@@ -87,8 +84,10 @@ const GlobalChatDrawer = ({ isOpen, onClose }) => {
 
   useEffect(() => {
     if (activeContact && isOpen && isAuthenticated) {
-      fetchMessages(activeContact, false);
-      const timer = setInterval(() => fetchMessages(activeContact, true), 3000);
+      // Clear messages immediately when switching contacts
+      setMessages([]);
+      fetchMessages(activeContact);
+      const timer = setInterval(() => fetchMessages(activeContact), 4000);
       return () => clearInterval(timer);
     }
   }, [activeContact, isOpen, isAuthenticated]);
@@ -413,11 +412,7 @@ const GlobalChatDrawer = ({ isOpen, onClose }) => {
 
                     {/* Message Thread Feed */}
                     <div className="flex-1 p-3 overflow-y-auto space-y-2.5 bg-[#09090b]">
-                      {loadingMessages && messages.length === 0 ? (
-                        <div className="py-12 text-center">
-                          <div className="spinner mx-auto" />
-                        </div>
-                      ) : messages.length === 0 ? (
+                      {messages.length === 0 ? (
                         <div className="py-12 text-center text-zinc-500 text-xs space-y-2 max-w-xs mx-auto">
                           <div className="w-12 h-12 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center text-xl mx-auto">
                             <HiOutlineChatAlt2 />

@@ -63,9 +63,8 @@ const ChatPage = () => {
   }, []);
 
   // Fetch active conversation messages
-  const fetchMessages = async (contact, silent = false) => {
+  const fetchMessages = async (contact) => {
     if (!contact) return;
-    if (!silent) setLoadingMessages(true);
     try {
       if (contact.type === "direct") {
         const res = await messageAPI.getDirect(contact._id);
@@ -76,15 +75,15 @@ const ChatPage = () => {
       }
     } catch (e) {
       console.error(e);
-    } finally {
-      if (!silent) setLoadingMessages(false);
     }
   };
 
   useEffect(() => {
     if (activeContact) {
-      fetchMessages(activeContact, false);
-      const timer = setInterval(() => fetchMessages(activeContact, true), 4000);
+      // Clear previous messages immediately on contact switch
+      setMessages([]);
+      fetchMessages(activeContact);
+      const timer = setInterval(() => fetchMessages(activeContact), 4000);
       return () => clearInterval(timer);
     }
   }, [activeContact]);
@@ -343,9 +342,7 @@ const ChatPage = () => {
 
               {/* Message Thread Feed */}
               <div className="flex-1 p-3.5 sm:p-6 overflow-y-auto space-y-3 bg-[#09090b]">
-                {loadingMessages && messages.length === 0 ? (
-                  <div className="py-12 text-center"><div className="spinner mx-auto" /></div>
-                ) : messages.length === 0 ? (
+                {messages.length === 0 ? (
                   <div className="py-16 text-center text-zinc-500 text-xs space-y-3 max-w-sm mx-auto">
                     <div className="w-14 h-14 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center text-2xl mx-auto">
                       <HiOutlineChatAlt2 />
