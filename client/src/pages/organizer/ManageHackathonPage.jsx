@@ -198,11 +198,22 @@ const ManageHackathonPage = () => {
     } catch (e) { toast.error(e.response?.data?.message || "Failed"); }
   };
 
+  // Compute unique judge count (hackathon-level + submission-level)
+  const allAssignedJudgeIds = new Set(
+    (hackathon?.assignedJudges || []).map(j => (typeof j === "string" ? j : j._id))
+  );
+  submissions.forEach(s => {
+    (s.assignedJudges || []).forEach(j => {
+      const jId = typeof j === "string" ? j : j._id;
+      if (jId) allAssignedJudgeIds.add(jId.toString());
+    });
+  });
+
   const tabs = [
     { id: "overview",      label: "Overview",       icon: HiOutlineClipboardList },
     { id: "registrations", label: "Registrations",  icon: HiOutlineUserGroup,    count: registrations.length },
     { id: "submissions",   label: "Submissions",    icon: HiOutlineDocumentText, count: submissions.length },
-    { id: "judges",        label: "Judges",         icon: HiOutlineScale,        count: hackathon?.assignedJudges?.length || 0 },
+    { id: "judges",        label: "Judges",         icon: HiOutlineScale,        count: allAssignedJudgeIds.size },
   ];
 
   if (loading) return (
@@ -225,6 +236,18 @@ const ManageHackathonPage = () => {
 
   const pending = registrations.filter(r => r.status === "pending").length;
   const isEndDatePassed = hackathon.endDate ? new Date() >= new Date(hackathon.endDate) : true;
+
+  // Count ALL unique judges — hackathon-level + submission-level combined
+  const hackathonJudgeIds = new Set(
+    (hackathon.assignedJudges || []).map(j => (typeof j === "string" ? j : j._id))
+  );
+  submissions.forEach(s => {
+    (s.assignedJudges || []).forEach(j => {
+      const jId = typeof j === "string" ? j : j._id;
+      if (jId) hackathonJudgeIds.add(jId.toString());
+    });
+  });
+  const totalJudgesAssigned = hackathonJudgeIds.size;
 
   return (
     <DashboardLayout>
@@ -374,7 +397,7 @@ const ManageHackathonPage = () => {
                 { label: "Total Registrations", value: registrations.length, color: "text-indigo-400", bg: "from-indigo-500/10 to-transparent" },
                 { label: "Pending Approval", value: pending, color: "text-amber-400", bg: "from-amber-500/10 to-transparent" },
                 { label: "Submissions", value: submissions.length, color: "text-emerald-400", bg: "from-emerald-500/10 to-transparent" },
-                { label: "Judges Assigned", value: hackathon.assignedJudges?.length || 0, color: "text-violet-400", bg: "from-violet-500/10 to-transparent" },
+                { label: "Judges Assigned", value: totalJudgesAssigned, color: "text-violet-400", bg: "from-violet-500/10 to-transparent" },
               ].map(s => (
                 <div key={s.label} className={`manage-stat-card bg-gradient-to-br ${s.bg}`}>
                   <p className={`manage-stat-value ${s.color}`}>{s.value}</p>
