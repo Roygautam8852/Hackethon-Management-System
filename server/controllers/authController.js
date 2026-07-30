@@ -62,8 +62,9 @@ const login = asyncHandler(async (req, res) => {
     throw new ApiError(403, "Your account has been blocked. Contact admin.");
   }
 
-  // Auto-clean any base64 avatar data that was stored due to old upload bug
-  if (user.avatar && user.avatar.startsWith("data:")) {
+  // Auto-clean any oversized base64 avatar stored due to old upload bug (> 200KB)
+  // Small compressed thumbnails (< 200KB) are intentional and should be kept.
+  if (user.avatar && user.avatar.startsWith("data:") && user.avatar.length > 200 * 1024) {
     user.avatar = "";
     user.avatarPublicId = "";
     await user.save();
@@ -118,15 +119,20 @@ const updateProfile = asyncHandler(async (req, res) => {
   if (linkedin !== undefined) user.linkedin = linkedin;
   if (portfolio !== undefined) user.portfolio = portfolio;
 
-  // Handle avatar upload
-  if (req.file) {
-    if (req.file._cloudinaryMissing) {
-      // Cloudinary not configured — save other profile changes but skip avatar
-      await user.save();
-      return res.status(200).json(
-        new ApiResponse(200, { user }, "Profile updated, but image upload is not configured on this server.")
-      );
+  // Handle avatar: either a small compressed base64 from the client (no Cloudinary needed)
+  // OR a Cloudinary-uploaded file (when credentials are properly configured).
+  if (req.body.avatarBase64) {
+    const b64 = req.body.avatarBase64;
+    if (!b64.startsWith("data:image/")) {
+      throw new ApiError(400, "Invalid image format");
     }
+    // Guard: compressed thumbnails should be well under 200KB
+    if (b64.length > 200 * 1024) {
+      throw new ApiError(400, "Image is too large after compression. Please choose a smaller image.");
+    }
+    user.avatar = b64;
+    user.avatarPublicId = "";
+  } else if (req.file && !req.file._cloudinaryMissing) {
     // Delete old avatar from cloudinary if exists
     if (user.avatarPublicId) {
       const cloudinary = require("../config/cloudinary");

@@ -11,6 +11,28 @@ import {
 import { FaGithub, FaLinkedin } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 
+// Compress and resize image to a small JPEG thumbnail (~15-30KB)
+// using the browser's Canvas API — no external service needed.
+const compressImage = (file, maxDim = 200, quality = 0.78) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (e) => {
+      const img = new Image();
+      img.src = e.target.result;
+      img.onload = () => {
+        const scale = Math.min(maxDim / img.width, maxDim / img.height, 1);
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+        canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+      img.onerror = reject;
+    };
+    reader.onerror = reject;
+  });
+
 const ProfilePage = () => {
   const { user, updateUser } = useAuth();
   const [editing, setEditing] = useState(false);
@@ -51,25 +73,16 @@ const ProfilePage = () => {
   };
 
   // --- Upload avatar ---
+  // Compresses image to ~15-30KB thumbnail on the client, then stores as
+  // a small base64 string in MongoDB — works without any cloud storage.
   const handleAvatarUpload = async () => {
     if (!avatarFile) return;
     setUploadingAvatar(true);
     try {
-      const fd = new FormData();
-      fd.append("avatar", avatarFile);
-      fd.append("name", user?.name || "");
-      const res = await authAPI.updateProfile(fd);
+      const compressed = await compressImage(avatarFile, 200, 0.78);
+      const res = await authAPI.updateProfile({ avatarBase64: compressed, name: user?.name || "" });
       updateUser(res.data.data.user);
-      const msg = res.data.message || "";
-      if (msg.toLowerCase().includes("not configured")) {
-        toast("⚠️ Image upload is not available on this server. Other profile changes were saved.", {
-          icon: "⚠️",
-          style: { background: "#1c1c1e", color: "#facc15", border: "1px solid #713f12" },
-          duration: 5000,
-        });
-      } else {
-        toast.success("Profile photo updated!");
-      }
+      toast.success("Profile photo updated!");
       setAvatarFile(null);
       setAvatarPreview(null);
     } catch (err) {

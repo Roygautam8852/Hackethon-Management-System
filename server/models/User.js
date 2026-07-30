@@ -75,13 +75,14 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
 };
 
 // Remove sensitive fields from JSON output
-// Also strip any base64 avatar data URIs to prevent oversized responses
+// Also strip any large base64 avatar data URIs to prevent oversized responses.
+// Small compressed thumbnails (< 200KB) are allowed.
 userSchema.methods.toJSON = function () {
   const obj = this.toObject();
   delete obj.password;
   delete obj.avatarPublicId;
-  // Strip base64 data URIs — these are too large for API responses
-  if (obj.avatar && obj.avatar.startsWith("data:")) {
+  // Strip base64 data URIs that are too large for API responses (> 200KB)
+  if (obj.avatar && obj.avatar.startsWith("data:") && obj.avatar.length > 200 * 1024) {
     obj.avatar = "";
   }
   return obj;
