@@ -62,6 +62,13 @@ const login = asyncHandler(async (req, res) => {
     throw new ApiError(403, "Your account has been blocked. Contact admin.");
   }
 
+  // Auto-clean any base64 avatar data that was stored due to old upload bug
+  if (user.avatar && user.avatar.startsWith("data:")) {
+    user.avatar = "";
+    user.avatarPublicId = "";
+    await user.save();
+  }
+
   const token = generateToken(user._id);
   res.cookie("token", token, cookieOptions);
 

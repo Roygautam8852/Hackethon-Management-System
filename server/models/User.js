@@ -75,10 +75,15 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
 };
 
 // Remove sensitive fields from JSON output
+// Also strip any base64 avatar data URIs to prevent oversized responses
 userSchema.methods.toJSON = function () {
   const obj = this.toObject();
   delete obj.password;
   delete obj.avatarPublicId;
+  // Strip base64 data URIs — these are too large for API responses
+  if (obj.avatar && obj.avatar.startsWith("data:")) {
+    obj.avatar = "";
+  }
   return obj;
 };
 
