@@ -14,17 +14,20 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Handle 401 globally
+// Handle 401 globally — but don't disrupt active login/signup flows
 api.interceptors.response.use(
   (res) => res,
   (error) => {
-    const isAuthRoute = error.config?.url?.includes("/auth/");
-    if (error.response?.status === 401 && !isAuthRoute) {
+    const url = error.config?.url || "";
+    const isAuthRoute = url.includes("/auth/");
+    const isOn401Redirect =
+      window.location.pathname === "/login" ||
+      window.location.pathname === "/signup";
+
+    if (error.response?.status === 401 && !isAuthRoute && !isOn401Redirect) {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
-      if (window.location.pathname !== "/login") {
-        window.location.href = "/login";
-      }
+      window.location.href = "/login";
     }
     return Promise.reject(error);
   }

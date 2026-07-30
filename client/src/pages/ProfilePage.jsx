@@ -1,4 +1,4 @@
-﻿import { useState, useRef } from "react";
+import { useState, useRef } from "react";
 import DashboardLayout from "../components/layout/DashboardLayout";
 import { useAuth } from "../context/AuthContext";
 import { authAPI } from "../services/apiServices";
@@ -60,7 +60,16 @@ const ProfilePage = () => {
       fd.append("name", user?.name || "");
       const res = await authAPI.updateProfile(fd);
       updateUser(res.data.data.user);
-      toast.success("Profile photo updated!");
+      const msg = res.data.message || "";
+      if (msg.toLowerCase().includes("not configured")) {
+        toast("⚠️ Image upload is not available on this server. Other profile changes were saved.", {
+          icon: "⚠️",
+          style: { background: "#1c1c1e", color: "#facc15", border: "1px solid #713f12" },
+          duration: 5000,
+        });
+      } else {
+        toast.success("Profile photo updated!");
+      }
       setAvatarFile(null);
       setAvatarPreview(null);
     } catch (err) {

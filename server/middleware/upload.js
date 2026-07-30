@@ -39,8 +39,8 @@ const createUploadMiddleware = (folder, fieldName, isSingle = true) => {
     }
 
     const upload = isSingle
-      ? multer({ storage }).single(fieldName)
-      : multer({ storage }).array(fieldName, 10);
+      ? multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } }).single(fieldName)
+      : multer({ storage, limits: { fileSize: 10 * 1024 * 1024 } }).array(fieldName, 10);
 
     upload(req, res, (err) => {
       if (err) {
@@ -62,21 +62,21 @@ const createUploadMiddleware = (folder, fieldName, isSingle = true) => {
   };
 };
 
-// Convert memory storage buffer to data URI so it works as an image URL
+// When Cloudinary is not configured, we cannot store the image.
+// Set path to null so the controller knows to skip the avatar update.
 const processMemoryFiles = (req) => {
   if (req.file && req.file.buffer) {
-    const mime = req.file.mimetype || "image/png";
-    const b64 = req.file.buffer.toString("base64");
-    req.file.path = `data:${mime};base64,${b64}`;
-    req.file.filename = `local_${Date.now()}`;
+    // No real Cloudinary — discard buffer, signal to controller to skip avatar save
+    req.file.path = null;
+    req.file.filename = null;
+    req.file._cloudinaryMissing = true;
   }
   if (req.files && Array.isArray(req.files)) {
     req.files.forEach((f) => {
       if (f.buffer) {
-        const mime = f.mimetype || "image/png";
-        const b64 = f.buffer.toString("base64");
-        f.path = `data:${mime};base64,${b64}`;
-        f.filename = `local_${Date.now()}`;
+        f.path = null;
+        f.filename = null;
+        f._cloudinaryMissing = true;
       }
     });
   }

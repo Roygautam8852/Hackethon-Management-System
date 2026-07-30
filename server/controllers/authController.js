@@ -113,6 +113,13 @@ const updateProfile = asyncHandler(async (req, res) => {
 
   // Handle avatar upload
   if (req.file) {
+    if (req.file._cloudinaryMissing) {
+      // Cloudinary not configured — save other profile changes but skip avatar
+      await user.save();
+      return res.status(200).json(
+        new ApiResponse(200, { user }, "Profile updated, but image upload is not configured on this server.")
+      );
+    }
     // Delete old avatar from cloudinary if exists
     if (user.avatarPublicId) {
       const cloudinary = require("../config/cloudinary");
