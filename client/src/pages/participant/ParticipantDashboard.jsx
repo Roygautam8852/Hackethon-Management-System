@@ -237,25 +237,59 @@ const ParticipantDashboard = () => {
               <Link to="/hackathons" className="btn-primary text-xs px-3 py-1.5 mt-2">Browse Hackathons</Link>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-3">
               {registrations.map(r => (
-                <div key={r._id} className="flex items-center justify-between p-3 rounded-xl bg-[#0d0d0f] border border-zinc-800/80 hover:border-zinc-700 transition-colors">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-9 h-9 rounded-lg bg-indigo-500/10 overflow-hidden flex-shrink-0 border border-zinc-800">
+                <div
+                  key={r._id}
+                  className="rounded-2xl bg-[#0d0d0f] border border-zinc-800/80 hover:border-zinc-700 transition-all duration-200 overflow-hidden"
+                >
+                  {/* Main row */}
+                  <div className="flex items-center gap-3 p-3 sm:p-3.5">
+                    {/* Thumbnail */}
+                    <div className="w-12 h-12 sm:w-11 sm:h-11 rounded-xl bg-indigo-500/10 overflow-hidden flex-shrink-0 border border-zinc-800">
                       {r.hackathon?.bannerImage
                         ? <img src={r.hackathon.bannerImage} alt="" className="w-full h-full object-cover" />
-                        : <div className="w-full h-full flex items-center justify-center text-xs text-indigo-400">🏆</div>
+                        : <div className="w-full h-full flex items-center justify-center text-xl">🏆</div>
                       }
                     </div>
-                    <div className="min-w-0">
-                      <p className="text-xs font-bold text-white truncate">{r.hackathon?.title}</p>
-                      <p className="text-[10px] text-zinc-500 capitalize">{r.hackathon?.mode} · {r.hackathon?.status?.replace(/_/g, " ")}</p>
+
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-white leading-tight truncate pr-1">
+                        {r.hackathon?.title}
+                      </p>
+                      <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                        <span className="text-[10px] font-semibold text-zinc-500 bg-zinc-800/60 px-1.5 py-0.5 rounded-md capitalize">
+                          {r.hackathon?.mode}
+                        </span>
+                        <span className="text-[10px] text-zinc-600">·</span>
+                        <span className="text-[10px] font-medium text-zinc-500 capitalize">
+                          {r.hackathon?.status?.replace(/_/g, " ")}
+                        </span>
+                      </div>
                     </div>
+
+                    {/* Status badge — always visible */}
+                    <span className={`badge ${badgeMap[r.status] || "badge-gray"} text-[10px] flex-shrink-0 capitalize`}>
+                      {r.status}
+                    </span>
                   </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <span className={`badge ${badgeMap[r.status] || "badge-gray"} text-[10px]`}>{r.status}</span>
-                    <Link to={`/participant/results?hackathon=${r.hackathon?._id}`} className="text-indigo-400 hover:text-indigo-300 text-xs font-medium">
-                      View Results →
+
+                  {/* Footer action bar */}
+                  <div className="border-t border-zinc-800/60 px-3 sm:px-3.5 py-2 flex items-center justify-between bg-zinc-900/30">
+                    <span className="text-[10px] text-zinc-600 font-medium">
+                      Registration {r.hackathon?.registrationOpen ? (
+                        <span className="text-emerald-500">Open</span>
+                      ) : (
+                        <span className="text-zinc-500">Closed</span>
+                      )}
+                    </span>
+                    <Link
+                      to={`/participant/results?hackathon=${r.hackathon?._id}`}
+                      className="flex items-center gap-1 text-xs font-semibold text-indigo-400 hover:text-indigo-300 transition-colors active:scale-95"
+                    >
+                      View Results
+                      <HiArrowRight className="text-sm" />
                     </Link>
                   </div>
                 </div>
