@@ -703,18 +703,8 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   padding: 1.125rem 1rem;
   text-align: center;
   transition: all 0.2s ease;
-  position: relative;
-  overflow: hidden;
 }
 .manage-stat-card:hover { border-color: #52525b; transform: translateY(-2px); }
-.manage-stat-card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: inherit;
-  border-radius: inherit;
-  pointer-events: none;
-}
 
 .manage-stat-value {
   font-size: clamp(1.75rem, 6vw, 2.25rem);
