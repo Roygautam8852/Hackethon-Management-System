@@ -9,8 +9,9 @@ import {
   HiOutlineCheckCircle, HiOutlineXCircle, HiOutlineSearch,
   HiOutlineExternalLink, HiOutlineTrash, HiOutlinePlus,
   HiOutlineFlag, HiOutlineClipboardList, HiOutlineUserAdd, HiOutlineCheck, HiOutlineX,
+  HiOutlineChevronDown,
 } from "react-icons/hi";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 const statusBadge = {
   pending:      "badge-warning",
@@ -31,9 +32,6 @@ const ManageHackathonPage = () => {
   const [allJudges, setAllJudges] = useState([]);
   const [judgeSearchFilter, setJudgeSearchFilter] = useState("");
   const [actionJudgeId, setActionJudgeId] = useState(null);
-  const [judgeEmail, setJudgeEmail] = useState("");
-  const [searchingJudge, setSearchingJudge] = useState(false);
-  const [foundJudge, setFoundJudge] = useState(null);
 
   // Submission Judge Assignment Modal
   const [assignSubModal, setAssignSubModal] = useState(null);
@@ -41,7 +39,7 @@ const ManageHackathonPage = () => {
   const [savingSubJudges, setSavingSubJudges] = useState(false);
 
   // Reject modal
-  const [rejectModal, setRejectModal] = useState(null); // { regId }
+  const [rejectModal, setRejectModal] = useState(null);
   const [rejectReason, setRejectReason] = useState("");
 
   // Delete Modal State
@@ -50,13 +48,15 @@ const ManageHackathonPage = () => {
   const [confirmInput, setConfirmInput] = useState("");
   const [deleting, setDeleting] = useState(false);
 
+  // Mobile action menu
+  const [mobileActionsOpen, setMobileActionsOpen] = useState(false);
+
   const handleDeleteHackathon = async () => {
     if (!hackathon) return;
     if (confirmInput.trim() !== hackathon.title.trim()) {
       toast.error(`Please type exact hackathon name "${hackathon.title}" to confirm`);
       return;
     }
-
     setDeleting(true);
     try {
       await hackathonAPI.delete(id);
@@ -68,7 +68,6 @@ const ManageHackathonPage = () => {
     }
   };
 
-  // Publish results
   const [publishing, setPublishing] = useState(false);
 
   const fetchData = async () => {
@@ -200,15 +199,18 @@ const ManageHackathonPage = () => {
   };
 
   const tabs = [
-    { id: "overview",       label: "Overview",       icon: HiOutlineClipboardList },
-    { id: "registrations",  label: "Registrations",  icon: HiOutlineUserGroup,     count: registrations.length },
-    { id: "submissions",    label: "Submissions",     icon: HiOutlineDocumentText,  count: submissions.length },
-    { id: "judges",         label: "Judges",          icon: HiOutlineScale,         count: hackathon?.assignedJudges?.length || 0 },
+    { id: "overview",      label: "Overview",       icon: HiOutlineClipboardList },
+    { id: "registrations", label: "Registrations",  icon: HiOutlineUserGroup,    count: registrations.length },
+    { id: "submissions",   label: "Submissions",    icon: HiOutlineDocumentText, count: submissions.length },
+    { id: "judges",        label: "Judges",         icon: HiOutlineScale,        count: hackathon?.assignedJudges?.length || 0 },
   ];
 
   if (loading) return (
     <DashboardLayout>
-      <div className="flex justify-center items-center h-64"><div className="spinner" /></div>
+      <div className="flex flex-col items-center justify-center h-64 gap-4">
+        <div className="spinner" />
+        <p className="text-zinc-500 text-sm">Loading hackathon data…</p>
+      </div>
     </DashboardLayout>
   );
 
@@ -222,217 +224,333 @@ const ManageHackathonPage = () => {
   );
 
   const pending = registrations.filter(r => r.status === "pending").length;
+  const isEndDatePassed = hackathon.endDate ? new Date() >= new Date(hackathon.endDate) : true;
 
   return (
     <DashboardLayout>
-      <div className="space-y-6 max-w-5xl">
+      <div className="manage-page space-y-5 pb-10">
 
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 border-b border-zinc-800 pb-5">
-          <div>
-            <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-2xl font-extrabold text-white tracking-tight">{hackathon.title}</h1>
-              <span className={`badge ${
-                hackathon.status === "completed" ? "badge-success" :
-                hackathon.status === "registration_open" ? "badge-primary" :
-                "badge-warning"
-              } capitalize text-[11px] font-bold`}>
-                {hackathon.status?.replace(/_/g, " ")}
-              </span>
-              {hackathon.registrationOpen && <span className="badge badge-success text-[10px]">Reg Open</span>}
+        {/* ── HEADER ── */}
+        <div className="manage-header">
+          {/* Title row */}
+          <div className="manage-title-row">
+            <div className="manage-title-block">
+              <div className="manage-title-badges">
+                <h1 className="manage-hackathon-title">{hackathon.title}</h1>
+                <span className={`badge ${
+                  hackathon.status === "completed" ? "badge-success" :
+                  hackathon.status === "registration_open" ? "badge-primary" :
+                  "badge-warning"
+                } capitalize text-[10px] font-bold`}>
+                  {hackathon.status?.replace(/_/g, " ")}
+                </span>
+                {hackathon.registrationOpen && (
+                  <span className="badge badge-success text-[10px]">Reg Open</span>
+                )}
+              </div>
+              <p className="manage-hackathon-meta">
+                {hackathon.mode} · {hackathon.theme}
+                {hackathon.startDate && ` · ${format(new Date(hackathon.startDate), "MMM d")} – ${format(new Date(hackathon.endDate), "MMM d, yyyy")}`}
+              </p>
             </div>
-            <p className="text-zinc-500 text-xs mt-1">
-              {hackathon.mode} · {hackathon.theme}
-              {hackathon.startDate && ` · ${format(new Date(hackathon.startDate), "MMM d")} – ${format(new Date(hackathon.endDate), "MMM d, yyyy")}`}
-            </p>
-          </div>
 
-          <div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
-            <button
-              onClick={handleToggleReg}
-              className={`btn-sm text-xs px-3 py-1.5 flex items-center gap-1.5 rounded-lg border transition-colors ${
-                hackathon.registrationOpen
-                  ? "border-red-500/40 text-red-400 hover:bg-red-500/10"
-                  : "border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10"
-              }`}
-            >
-              {hackathon.registrationOpen ? <HiOutlineXCircle /> : <HiOutlineCheckCircle />}
-              {hackathon.registrationOpen ? "Close Reg" : "Open Reg"}
-            </button>
-            <Link
-              to={`/hackathons/${hackathon._id}`}
-              target="_blank"
-              className="btn-secondary text-xs px-3 py-1.5 flex items-center gap-1.5"
-            >
-              <HiOutlineExternalLink /> Preview
-            </Link>
-            {hackathon.status !== "completed" && (() => {
-              const isEndDatePassed = hackathon.endDate ? new Date() >= new Date(hackathon.endDate) : true;
-              return (
+            {/* Desktop actions */}
+            <div className="manage-actions-desktop">
+              <button
+                onClick={handleToggleReg}
+                className={`manage-action-btn ${hackathon.registrationOpen ? "manage-action-danger" : "manage-action-success"}`}
+              >
+                {hackathon.registrationOpen ? <HiOutlineXCircle /> : <HiOutlineCheckCircle />}
+                {hackathon.registrationOpen ? "Close Reg" : "Open Reg"}
+              </button>
+              <Link
+                to={`/hackathons/${hackathon._id}`}
+                target="_blank"
+                className="manage-action-btn manage-action-ghost"
+              >
+                <HiOutlineExternalLink /> Preview
+              </Link>
+              {hackathon.status !== "completed" && (
                 <button
                   onClick={handlePublish}
                   disabled={publishing || !isEndDatePassed}
-                  title={!isEndDatePassed ? `Results can only be published after ${format(new Date(hackathon.endDate), "MMM d, yyyy")}` : ""}
-                  className="btn-primary text-xs px-3 py-1.5 flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                  title={!isEndDatePassed ? `Available after ${format(new Date(hackathon.endDate), "MMM d, yyyy")}` : ""}
+                  className="manage-action-btn manage-action-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <HiOutlineFlag />
-                  {publishing ? "Publishing..." : "Publish Results"}
+                  {publishing ? "Publishing…" : "Publish Results"}
                 </button>
-              );
-            })()}
+              )}
+              <button
+                onClick={() => { setDeleteStep(1); setConfirmInput(""); }}
+                className="manage-action-btn manage-action-delete"
+              >
+                <HiOutlineTrash /> Delete
+              </button>
+            </div>
 
-            <button
-              onClick={() => { setDeleteStep(1); setConfirmInput(""); }}
-              className="btn-danger text-xs px-3 py-1.5 flex items-center gap-1.5"
-              title="Delete Hackathon"
-            >
-              <HiOutlineTrash /> Delete
-            </button>
+            {/* Mobile actions dropdown */}
+            <div className="manage-actions-mobile">
+              <button
+                onClick={() => setMobileActionsOpen(v => !v)}
+                className="manage-mobile-menu-btn"
+              >
+                Actions <HiOutlineChevronDown className={`transition-transform ${mobileActionsOpen ? "rotate-180" : ""}`} />
+              </button>
+            </div>
+          </div>
+
+          {/* Mobile dropdown panel */}
+          <AnimatePresence>
+            {mobileActionsOpen && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="manage-mobile-actions-panel"
+              >
+                <button
+                  onClick={() => { handleToggleReg(); setMobileActionsOpen(false); }}
+                  className={`manage-mobile-action-item ${hackathon.registrationOpen ? "text-red-400" : "text-emerald-400"}`}
+                >
+                  {hackathon.registrationOpen ? <HiOutlineXCircle className="text-lg" /> : <HiOutlineCheckCircle className="text-lg" />}
+                  {hackathon.registrationOpen ? "Close Registration" : "Open Registration"}
+                </button>
+                <Link
+                  to={`/hackathons/${hackathon._id}`}
+                  target="_blank"
+                  className="manage-mobile-action-item text-zinc-300"
+                  onClick={() => setMobileActionsOpen(false)}
+                >
+                  <HiOutlineExternalLink className="text-lg" /> Preview Page
+                </Link>
+                {hackathon.status !== "completed" && (
+                  <button
+                    onClick={() => { handlePublish(); setMobileActionsOpen(false); }}
+                    disabled={publishing || !isEndDatePassed}
+                    className="manage-mobile-action-item text-white disabled:opacity-50"
+                  >
+                    <HiOutlineFlag className="text-lg" />
+                    {publishing ? "Publishing…" : "Publish Results"}
+                  </button>
+                )}
+                <button
+                  onClick={() => { setDeleteStep(1); setConfirmInput(""); setMobileActionsOpen(false); }}
+                  className="manage-mobile-action-item text-red-400 border-t border-red-500/20 mt-1 pt-2"
+                >
+                  <HiOutlineTrash className="text-lg" /> Delete Hackathon
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* ── TABS ── */}
+        <div className="manage-tabs-wrapper">
+          <div className="manage-tabs">
+            {tabs.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`manage-tab-btn ${activeTab === tab.id ? "manage-tab-active" : ""}`}
+              >
+                <tab.icon />
+                <span className="manage-tab-label">{tab.label}</span>
+                {tab.count !== undefined && (
+                  <span className={`manage-tab-count ${activeTab === tab.id ? "active" : ""}`}>
+                    {tab.count}
+                  </span>
+                )}
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-1 border-b border-zinc-800">
-          {tabs.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold capitalize border-b-2 transition-colors ${
-                activeTab === tab.id
-                  ? "border-indigo-500 text-indigo-400"
-                  : "border-transparent text-zinc-500 hover:text-zinc-300"
-              }`}
-            >
-              <tab.icon className="text-sm" />
-              {tab.label}
-              {tab.count !== undefined && (
-                <span className={`ml-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
-                  activeTab === tab.id ? "bg-indigo-500/20 text-indigo-300" : "bg-zinc-800 text-zinc-400"
-                }`}>
-                  {tab.count}
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
-
-        {/* ── Overview Tab ── */}
+        {/* ── OVERVIEW TAB ── */}
         {activeTab === "overview" && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { label: "Total Registrations", value: registrations.length, color: "text-indigo-400" },
-              { label: "Pending Approval", value: pending, color: "text-amber-400" },
-              { label: "Submissions", value: submissions.length, color: "text-emerald-400" },
-              { label: "Judges Assigned", value: hackathon.assignedJudges?.length || 0, color: "text-violet-400" },
-            ].map(s => (
-              <div key={s.label} className="card text-center py-5">
-                <p className={`text-3xl font-black ${s.color}`}>{s.value}</p>
-                <p className="text-zinc-500 text-[11px] mt-1 uppercase tracking-wider">{s.label}</p>
-              </div>
-            ))}
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+            <div className="manage-stats-grid">
+              {[
+                { label: "Total Registrations", value: registrations.length, color: "text-indigo-400", bg: "from-indigo-500/10 to-transparent" },
+                { label: "Pending Approval", value: pending, color: "text-amber-400", bg: "from-amber-500/10 to-transparent" },
+                { label: "Submissions", value: submissions.length, color: "text-emerald-400", bg: "from-emerald-500/10 to-transparent" },
+                { label: "Judges Assigned", value: hackathon.assignedJudges?.length || 0, color: "text-violet-400", bg: "from-violet-500/10 to-transparent" },
+              ].map(s => (
+                <div key={s.label} className={`manage-stat-card bg-gradient-to-br ${s.bg}`}>
+                  <p className={`manage-stat-value ${s.color}`}>{s.value}</p>
+                  <p className="manage-stat-label">{s.label}</p>
+                </div>
+              ))}
+            </div>
+
             {pending > 0 && (
-              <div className="col-span-2 md:col-span-4 card bg-amber-500/5 border-amber-500/30 flex items-center justify-between gap-4">
-                <p className="text-amber-300 text-sm font-semibold">
-                  ⚠️ {pending} registration{pending > 1 ? "s" : ""} awaiting your approval
-                </p>
-                <button onClick={() => setActiveTab("registrations")} className="btn-primary text-xs px-4 py-2">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.97 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="manage-pending-alert"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">⚠️</span>
+                  <div>
+                    <p className="text-amber-300 text-sm font-semibold">
+                      {pending} registration{pending > 1 ? "s" : ""} awaiting approval
+                    </p>
+                    <p className="text-amber-500/70 text-xs mt-0.5">Review and approve or reject teams</p>
+                  </div>
+                </div>
+                <button onClick={() => setActiveTab("registrations")} className="manage-alert-btn">
                   Review Now →
                 </button>
-              </div>
+              </motion.div>
             )}
           </motion.div>
         )}
 
-        {/* ── Registrations Tab ── */}
+        {/* ── REGISTRATIONS TAB ── */}
         {activeTab === "registrations" && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="card p-0 overflow-x-auto">
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
             {registrations.length === 0 ? (
-              <div className="empty-state py-12">
-                <HiOutlineUserGroup className="text-4xl text-zinc-600" />
+              <div className="empty-state py-16 card">
+                <HiOutlineUserGroup className="text-5xl text-zinc-700" />
                 <p className="text-zinc-400 text-sm mt-2">No registrations yet</p>
+                <p className="text-zinc-600 text-xs">Teams that register will appear here</p>
               </div>
             ) : (
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Team</th>
-                    <th>Leader</th>
-                    <th>Members</th>
-                    <th>Registered</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
+              <>
+                {/* Mobile card list */}
+                <div className="manage-card-list md:hidden">
                   {registrations.map(r => (
-                    <tr key={r._id}>
-                      <td className="font-semibold text-white">{r.team?.name}</td>
-                      <td className="text-zinc-400 text-sm">{r.team?.leader?.name}</td>
-                      <td className="text-zinc-500 text-sm">{r.team?.members?.length || 0}</td>
-                      <td className="text-zinc-500 text-xs">
-                        {r.registeredAt ? format(new Date(r.registeredAt), "MMM d, yyyy") : "—"}
-                      </td>
-                      <td>
+                    <div key={r._id} className="manage-reg-card">
+                      <div className="manage-reg-card-header">
+                        <div className="manage-reg-avatar">
+                          {r.team?.name?.[0]?.toUpperCase() || "T"}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="manage-reg-team-name">{r.team?.name}</p>
+                          <p className="manage-reg-leader">{r.team?.leader?.name}</p>
+                        </div>
                         <span className={`badge ${statusBadge[r.status] || "badge-gray"} capitalize text-[10px]`}>
                           {r.status}
                         </span>
-                      </td>
-                      <td>
-                        {r.status === "pending" && (
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => handleApprove(r._id)}
-                              className="btn-primary btn-sm text-xs py-1 px-2.5 flex items-center gap-1"
-                            >
-                              <HiOutlineCheckCircle /> Approve
-                            </button>
-                            <button
-                              onClick={() => { setRejectModal({ regId: r._id }); setRejectReason(""); }}
-                              className="btn-danger btn-sm text-xs py-1 px-2.5 flex items-center gap-1"
-                            >
-                              <HiOutlineXCircle /> Reject
-                            </button>
-                          </div>
+                      </div>
+                      <div className="manage-reg-card-meta">
+                        <span className="manage-meta-chip">
+                          <HiOutlineUserGroup className="text-xs" />
+                          {r.team?.members?.length || 0} members
+                        </span>
+                        {r.registeredAt && (
+                          <span className="manage-meta-chip">
+                            {format(new Date(r.registeredAt), "MMM d, yyyy")}
+                          </span>
                         )}
-                      </td>
-                    </tr>
+                      </div>
+                      {r.status === "pending" && (
+                        <div className="manage-reg-card-actions">
+                          <button
+                            onClick={() => handleApprove(r._id)}
+                            className="manage-approve-btn"
+                          >
+                            <HiOutlineCheckCircle /> Approve
+                          </button>
+                          <button
+                            onClick={() => { setRejectModal({ regId: r._id }); setRejectReason(""); }}
+                            className="manage-reject-btn"
+                          >
+                            <HiOutlineXCircle /> Reject
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   ))}
-                </tbody>
-              </table>
+                </div>
+
+                {/* Desktop table */}
+                <div className="card p-0 overflow-x-auto hidden md:block">
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>Team</th>
+                        <th>Leader</th>
+                        <th>Members</th>
+                        <th>Registered</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {registrations.map(r => (
+                        <tr key={r._id}>
+                          <td className="font-semibold text-white">{r.team?.name}</td>
+                          <td className="text-zinc-400 text-sm">{r.team?.leader?.name}</td>
+                          <td className="text-zinc-500 text-sm">{r.team?.members?.length || 0}</td>
+                          <td className="text-zinc-500 text-xs">
+                            {r.registeredAt ? format(new Date(r.registeredAt), "MMM d, yyyy") : "—"}
+                          </td>
+                          <td>
+                            <span className={`badge ${statusBadge[r.status] || "badge-gray"} capitalize text-[10px]`}>
+                              {r.status}
+                            </span>
+                          </td>
+                          <td>
+                            {r.status === "pending" && (
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => handleApprove(r._id)}
+                                  className="btn-primary btn-sm text-xs py-1 px-2.5 flex items-center gap-1"
+                                >
+                                  <HiOutlineCheckCircle /> Approve
+                                </button>
+                                <button
+                                  onClick={() => { setRejectModal({ regId: r._id }); setRejectReason(""); }}
+                                  className="btn-danger btn-sm text-xs py-1 px-2.5 flex items-center gap-1"
+                                >
+                                  <HiOutlineXCircle /> Reject
+                                </button>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             )}
           </motion.div>
         )}
 
-        {/* ── Submissions Tab ── */}
+        {/* ── SUBMISSIONS TAB ── */}
         {activeTab === "submissions" && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="card p-0 overflow-x-auto">
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
             {submissions.length === 0 ? (
-              <div className="empty-state py-12">
-                <HiOutlineDocumentText className="text-4xl text-zinc-600" />
+              <div className="empty-state py-16 card">
+                <HiOutlineDocumentText className="text-5xl text-zinc-700" />
                 <p className="text-zinc-400 text-sm mt-2">No submissions yet</p>
+                <p className="text-zinc-600 text-xs">Team submissions will appear here</p>
               </div>
             ) : (
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Project</th>
-                    <th>Team</th>
-                    <th>Assigned Judges</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
+              <>
+                {/* Mobile card list */}
+                <div className="manage-card-list md:hidden">
                   {submissions.map(s => {
                     const assigned = s.assignedJudges || [];
                     return (
-                      <tr key={s._id}>
-                        <td className="font-semibold text-white max-w-[180px] truncate">{s.projectName}</td>
-                        <td className="text-zinc-400 text-sm">{s.team?.name}</td>
-                        <td>
+                      <div key={s._id} className="manage-sub-card">
+                        <div className="manage-sub-card-top">
+                          <div className="flex-1 min-w-0">
+                            <p className="manage-sub-name">{s.projectName}</p>
+                            <p className="manage-sub-team">{s.team?.name}</p>
+                          </div>
+                          <span className={`badge ${statusBadge[s.status] || "badge-gray"} capitalize text-[10px] flex-shrink-0`}>
+                            {s.status?.replace(/_/g, " ")}
+                          </span>
+                        </div>
+
+                        <div className="manage-sub-judges-row">
+                          <span className="text-zinc-500 text-xs">Judges:</span>
                           <div className="flex items-center gap-1.5 flex-wrap">
                             {assigned.length === 0 ? (
-                              <span className="text-zinc-500 text-xs italic">Unassigned</span>
+                              <span className="text-zinc-600 text-xs italic">Unassigned</span>
                             ) : (
                               assigned.map(j => (
                                 <span key={j._id || j} className="badge badge-primary text-[10px]">
@@ -442,59 +560,117 @@ const ManageHackathonPage = () => {
                             )}
                             <button
                               onClick={() => openSubJudgeModal(s)}
-                              className="btn-ghost btn-sm text-[10px] text-indigo-400 flex items-center gap-0.5"
-                              title="Assign Judges"
+                              className="manage-assign-judge-btn"
                             >
                               <HiOutlineUserAdd /> Edit
                             </button>
                           </div>
-                        </td>
-                        <td>
-                          <span className={`badge ${statusBadge[s.status] || "badge-gray"} capitalize text-[10px]`}>
-                            {s.status?.replace(/_/g, " ")}
-                          </span>
-                        </td>
-                        <td>
+                        </div>
+
+                        <div className="manage-sub-status-row">
+                          <span className="text-zinc-500 text-xs">Change Status:</span>
                           <select
                             value={s.status}
                             onChange={e => handleSubStatus(s._id, e.target.value)}
-                            className="text-xs bg-zinc-900 border border-zinc-700 rounded-lg px-2 py-1 text-zinc-300 focus:outline-none focus:border-indigo-500"
+                            className="manage-status-select"
                           >
                             <option value="pending">Pending</option>
                             <option value="under_review">Under Review</option>
                             <option value="approved">Approved</option>
                             <option value="rejected">Rejected</option>
                           </select>
-                        </td>
-                      </tr>
+                        </div>
+                      </div>
                     );
                   })}
-                </tbody>
-              </table>
+                </div>
+
+                {/* Desktop table */}
+                <div className="card p-0 overflow-x-auto hidden md:block">
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>Project</th>
+                        <th>Team</th>
+                        <th>Assigned Judges</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {submissions.map(s => {
+                        const assigned = s.assignedJudges || [];
+                        return (
+                          <tr key={s._id}>
+                            <td className="font-semibold text-white max-w-[180px] truncate">{s.projectName}</td>
+                            <td className="text-zinc-400 text-sm">{s.team?.name}</td>
+                            <td>
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                {assigned.length === 0 ? (
+                                  <span className="text-zinc-500 text-xs italic">Unassigned</span>
+                                ) : (
+                                  assigned.map(j => (
+                                    <span key={j._id || j} className="badge badge-primary text-[10px]">
+                                      {j.name || "Judge"}
+                                    </span>
+                                  ))
+                                )}
+                                <button
+                                  onClick={() => openSubJudgeModal(s)}
+                                  className="btn-ghost btn-sm text-[10px] text-indigo-400 flex items-center gap-0.5"
+                                >
+                                  <HiOutlineUserAdd /> Edit
+                                </button>
+                              </div>
+                            </td>
+                            <td>
+                              <span className={`badge ${statusBadge[s.status] || "badge-gray"} capitalize text-[10px]`}>
+                                {s.status?.replace(/_/g, " ")}
+                              </span>
+                            </td>
+                            <td>
+                              <select
+                                value={s.status}
+                                onChange={e => handleSubStatus(s._id, e.target.value)}
+                                className="text-xs bg-zinc-900 border border-zinc-700 rounded-lg px-2 py-1 text-zinc-300 focus:outline-none focus:border-indigo-500"
+                              >
+                                <option value="pending">Pending</option>
+                                <option value="under_review">Under Review</option>
+                                <option value="approved">Approved</option>
+                                <option value="rejected">Rejected</option>
+                              </select>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             )}
           </motion.div>
         )}
 
-        {/* ── Judges Tab ── */}
+        {/* ── JUDGES TAB ── */}
         {activeTab === "judges" && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
             {/* Search bar */}
-            <div className="flex items-center gap-3">
+            <div className="manage-judge-search-row">
               <div className="relative flex-1">
                 <HiOutlineSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 text-base pointer-events-none z-10" />
                 <input
                   value={judgeSearchFilter}
                   onChange={e => setJudgeSearchFilter(e.target.value)}
-                  placeholder="Search registered judges by name or email…"
+                  placeholder="Search judges by name or email…"
                   className="input-field pl-10 text-sm"
                 />
               </div>
-              <span className="text-xs text-zinc-500 font-medium">
+              <div className="manage-judge-count-badge">
                 {hackathon.assignedJudges?.length || 0} assigned
-              </span>
+              </div>
             </div>
 
-            {/* List of All Registered Judges */}
+            {/* Judges list */}
             <div className="card space-y-3">
               <h3 className="text-sm font-bold text-white uppercase tracking-wider border-b border-zinc-800 pb-2">
                 All Registered Judges ({allJudges.length})
@@ -502,8 +678,8 @@ const ManageHackathonPage = () => {
               {allJudges.length === 0 ? (
                 <div className="empty-state py-8">
                   <HiOutlineScale className="text-3xl text-zinc-600" />
-                  <p className="text-zinc-500 text-sm mt-1">No judges registered in the platform yet</p>
-                  <p className="text-zinc-600 text-xs">Users who sign up as "Judge" will appear here automatically.</p>
+                  <p className="text-zinc-500 text-sm mt-1">No judges registered yet</p>
+                  <p className="text-zinc-600 text-xs">Users who sign up as "Judge" will appear here.</p>
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -520,28 +696,20 @@ const ManageHackathonPage = () => {
                       return (
                         <div
                           key={judge._id}
-                          className={`flex items-center justify-between p-3 rounded-xl border transition-all ${
-                            isAssigned
-                              ? "bg-emerald-500/5 border-emerald-500/30"
-                              : "bg-zinc-900 border-zinc-800"
-                          }`}
+                          className={`manage-judge-row ${isAssigned ? "manage-judge-assigned" : "manage-judge-default"}`}
                         >
-                          <div className="flex items-center gap-3">
-                            <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold ${
-                              isAssigned
-                                ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
-                                : "bg-indigo-500/15 text-indigo-400 border border-indigo-500/30"
-                            }`}>
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className={`manage-judge-avatar ${isAssigned ? "manage-judge-avatar-assigned" : "manage-judge-avatar-default"}`}>
                               {judge.name?.[0]?.toUpperCase()}
                             </div>
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <p className="text-sm font-semibold text-white">{judge.name}</p>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <p className="text-sm font-semibold text-white truncate">{judge.name}</p>
                                 {isAssigned && (
                                   <span className="badge badge-success text-[10px]">Assigned ✓</span>
                                 )}
                               </div>
-                              <p className="text-xs text-zinc-400">{judge.email}</p>
+                              <p className="text-xs text-zinc-400 truncate">{judge.email}</p>
                             </div>
                           </div>
 
@@ -549,19 +717,25 @@ const ManageHackathonPage = () => {
                             <button
                               onClick={() => handleRemoveJudge(judge._id, judge.name)}
                               disabled={isBusy}
-                              className="btn-danger text-xs px-3 py-1.5 flex items-center gap-1"
+                              className="manage-judge-remove-btn"
                             >
-                              {isBusy ? <div className="w-3 h-3 border border-white/30 border-t-white rounded-full animate-spin" /> : <HiOutlineTrash />}
-                              Remove
+                              {isBusy
+                                ? <div className="w-3 h-3 border border-white/30 border-t-white rounded-full animate-spin" />
+                                : <HiOutlineTrash />
+                              }
+                              <span className="hidden sm:inline">Remove</span>
                             </button>
                           ) : (
                             <button
                               onClick={() => handleAssignJudge(judge._id, judge.name)}
                               disabled={isBusy}
-                              className="btn-primary text-xs px-3 py-1.5 flex items-center gap-1"
+                              className="manage-judge-assign-btn"
                             >
-                              {isBusy ? <div className="w-3 h-3 border border-white/30 border-t-white rounded-full animate-spin" /> : <HiOutlinePlus />}
-                              Assign
+                              {isBusy
+                                ? <div className="w-3 h-3 border border-white/30 border-t-white rounded-full animate-spin" />
+                                : <HiOutlinePlus />
+                              }
+                              <span className="hidden sm:inline">Assign</span>
                             </button>
                           )}
                         </div>
@@ -574,189 +748,215 @@ const ManageHackathonPage = () => {
         )}
       </div>
 
-      {/* ASSIGN JUDGES TO SUBMISSION MODAL */}
-      {assignSubModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-          <div className="bg-[#111113] border border-zinc-800 rounded-2xl p-6 w-full max-w-md shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
-              <div>
-                <h3 className="text-base font-bold text-white">Assign Judges to Project</h3>
-                <p className="text-xs text-zinc-400 truncate max-w-xs">{assignSubModal.projectName}</p>
+      {/* ═══════════════════════════════════════════
+          ASSIGN JUDGES TO SUBMISSION MODAL
+      ═══════════════════════════════════════════ */}
+      <AnimatePresence>
+        {assignSubModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="modal-overlay"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="modal-box"
+            >
+              <div className="modal-header">
+                <div>
+                  <h3 className="modal-title">Assign Judges</h3>
+                  <p className="modal-subtitle truncate">{assignSubModal.projectName}</p>
+                </div>
+                <button onClick={() => setAssignSubModal(null)} className="modal-close-btn">
+                  <HiOutlineX />
+                </button>
               </div>
-              <button onClick={() => setAssignSubModal(null)} className="text-zinc-500 hover:text-white p-1">
+
+              <p className="text-xs text-zinc-400 mb-3">Select judge(s) to evaluate this project:</p>
+
+              <div className="space-y-2 max-h-60 overflow-y-auto pr-0.5">
+                {allJudges.length === 0 ? (
+                  <p className="text-xs text-zinc-500 italic py-4 text-center">No registered judges found.</p>
+                ) : (
+                  allJudges.map(judge => {
+                    const isChecked = selectedSubJudgeIds.includes(judge._id);
+                    return (
+                      <div
+                        key={judge._id}
+                        onClick={() => toggleSubJudge(judge._id)}
+                        className={`modal-judge-item ${isChecked ? "modal-judge-checked" : ""}`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-xs font-bold flex-shrink-0">
+                            {judge.name?.[0]?.toUpperCase()}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-xs font-semibold text-white truncate">{judge.name}</p>
+                            <p className="text-[11px] text-zinc-500 truncate">{judge.email}</p>
+                          </div>
+                        </div>
+                        <div className={`modal-checkbox ${isChecked ? "modal-checkbox-checked" : ""}`}>
+                          {isChecked && <HiOutlineCheck className="text-xs" />}
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+
+              <div className="modal-footer">
+                <button onClick={() => setAssignSubModal(null)} className="btn-secondary text-xs px-4 py-2">
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveSubJudges}
+                  disabled={savingSubJudges}
+                  className="btn-primary text-xs px-4 py-2 flex items-center gap-1.5"
+                >
+                  {savingSubJudges ? "Saving…" : "Save Judges"}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ═══════════════════════════════════════════
+          REJECT MODAL
+      ═══════════════════════════════════════════ */}
+      <AnimatePresence>
+        {rejectModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="modal-overlay"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="modal-box"
+            >
+              <div className="modal-header">
+                <h3 className="modal-title">Reject Registration</h3>
+                <button onClick={() => { setRejectModal(null); setRejectReason(""); }} className="modal-close-btn">
+                  <HiOutlineX />
+                </button>
+              </div>
+              <p className="text-zinc-400 text-sm mb-3">Optionally provide a reason — it will be sent to the team leader.</p>
+              <textarea
+                value={rejectReason}
+                onChange={e => setRejectReason(e.target.value)}
+                rows={3}
+                placeholder="e.g. Team size does not meet requirements…"
+                className="input-field resize-none text-sm"
+              />
+              <div className="modal-footer">
+                <button
+                  onClick={() => { setRejectModal(null); setRejectReason(""); }}
+                  className="btn-secondary text-sm px-4 py-2"
+                >
+                  Cancel
+                </button>
+                <button onClick={handleReject} className="btn-danger text-sm px-4 py-2">
+                  Confirm Reject
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ═══════════════════════════════════════════
+          TWO-STEP DELETE CONFIRMATION MODAL
+      ═══════════════════════════════════════════ */}
+      <AnimatePresence>
+        {deleteStep > 0 && hackathon && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="modal-overlay"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="modal-box border-red-500/30"
+            >
+              <button onClick={() => setDeleteStep(0)} className="modal-close-btn absolute top-4 right-4">
                 <HiOutlineX />
               </button>
-            </div>
 
-            <p className="text-xs text-zinc-400">Select which judge(s) will be assigned to evaluate this project:</p>
-
-            <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
-              {allJudges.length === 0 ? (
-                <p className="text-xs text-zinc-500 italic py-4 text-center">No registered judges found.</p>
-              ) : (
-                allJudges.map(judge => {
-                  const isChecked = selectedSubJudgeIds.includes(judge._id);
-                  return (
-                    <div
-                      key={judge._id}
-                      onClick={() => toggleSubJudge(judge._id)}
-                      className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${
-                        isChecked
-                          ? "bg-indigo-500/10 border-indigo-500/40"
-                          : "bg-zinc-900 border-zinc-800 hover:border-zinc-700"
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-xs font-bold">
-                          {judge.name?.[0]?.toUpperCase()}
-                        </div>
-                        <div>
-                          <p className="text-xs font-semibold text-white">{judge.name}</p>
-                          <p className="text-[11px] text-zinc-500">{judge.email}</p>
-                        </div>
-                      </div>
-
-                      <div className={`w-5 h-5 rounded flex items-center justify-center border transition-all ${
-                        isChecked ? "bg-indigo-600 border-indigo-500 text-white" : "border-zinc-700"
-                      }`}>
-                        {isChecked && <HiOutlineCheck className="text-xs" />}
-                      </div>
-                    </div>
-                  );
-                })
+              {/* STEP 1 */}
+              {deleteStep === 1 && (
+                <div className="space-y-4 pt-2">
+                  <div className="w-12 h-12 rounded-2xl bg-red-500/20 text-red-400 border border-red-500/30 flex items-center justify-center text-2xl mx-auto">
+                    <HiOutlineTrash />
+                  </div>
+                  <div className="text-center space-y-1">
+                    <h3 className="text-lg font-black text-white">Delete Hackathon?</h3>
+                    <p className="text-xs text-red-400 font-bold uppercase tracking-wider">Step 1 of 2 · First Confirmation</p>
+                  </div>
+                  <div className="bg-red-500/10 border border-red-500/30 p-4 rounded-xl text-xs text-zinc-300 space-y-2">
+                    <p className="font-semibold text-white">
+                      Are you sure you want to delete <span className="text-red-400">"{hackathon.title}"</span>?
+                    </p>
+                    <p className="text-zinc-400">
+                      This will permanently purge all registrations, submissions, leaderboard scores, and judge evaluations.
+                    </p>
+                  </div>
+                  <div className="modal-footer">
+                    <button onClick={() => setDeleteStep(0)} className="btn-secondary text-xs px-4 py-2">Cancel</button>
+                    <button onClick={() => setDeleteStep(2)} className="btn-danger text-xs px-4 py-2 font-bold">
+                      Proceed →
+                    </button>
+                  </div>
+                </div>
               )}
-            </div>
 
-            <div className="flex gap-3 justify-end pt-2 border-t border-zinc-800">
-              <button
-                onClick={() => setAssignSubModal(null)}
-                className="btn-secondary text-xs px-4 py-2"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSaveSubJudges}
-                disabled={savingSubJudges}
-                className="btn-primary text-xs px-4 py-2 flex items-center gap-1.5"
-              >
-                {savingSubJudges ? "Saving..." : "Save Assigned Judges"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Reject Modal */}
-      {rejectModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-          <div className="bg-[#111113] border border-zinc-800 rounded-2xl p-6 w-full max-w-md shadow-2xl space-y-4">
-            <h3 className="text-base font-bold text-white">Reject Registration</h3>
-            <p className="text-zinc-400 text-sm">Optionally provide a reason — it will be sent to the team leader.</p>
-            <textarea
-              value={rejectReason}
-              onChange={e => setRejectReason(e.target.value)}
-              rows={3}
-              placeholder="e.g. Team size does not meet requirements…"
-              className="input-field resize-none text-sm"
-            />
-            <div className="flex gap-3 justify-end">
-              <button
-                onClick={() => { setRejectModal(null); setRejectReason(""); }}
-                className="btn-secondary text-sm px-4 py-2"
-              >
-                Cancel
-              </button>
-              <button onClick={handleReject} className="btn-danger text-sm px-4 py-2">
-                Confirm Reject
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── TWO-STEP DELETE CONFIRMATION MODAL ── */}
-      {deleteStep > 0 && hackathon && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
-          <div className="bg-[#111113] border border-red-500/40 rounded-2xl p-6 w-full max-w-md shadow-2xl space-y-4 relative">
-            <button onClick={() => setDeleteStep(0)} className="absolute top-4 right-4 text-zinc-500 hover:text-white p-1">
-              <HiOutlineX />
-            </button>
-
-            {/* STEP 1: WARNING CONFIRMATION */}
-            {deleteStep === 1 && (
-              <div className="space-y-4">
-                <div className="w-12 h-12 rounded-2xl bg-red-500/20 text-red-400 border border-red-500/30 flex items-center justify-center text-2xl mx-auto">
-                  <HiOutlineTrash />
+              {/* STEP 2 */}
+              {deleteStep === 2 && (
+                <div className="space-y-4 pt-2">
+                  <div className="w-12 h-12 rounded-2xl bg-red-600/30 text-red-300 border border-red-500 flex items-center justify-center text-2xl mx-auto shadow-lg shadow-red-500/20">
+                    <HiOutlineTrash />
+                  </div>
+                  <div className="text-center space-y-1">
+                    <h3 className="text-lg font-black text-white">Final Confirmation</h3>
+                    <p className="text-xs text-red-400 font-bold uppercase tracking-wider">Step 2 of 2 · Permanent Purge</p>
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-xs text-zinc-300">
+                      Type the exact title <strong className="text-amber-400">{hackathon.title}</strong> to confirm:
+                    </p>
+                    <input
+                      type="text"
+                      value={confirmInput}
+                      onChange={e => setConfirmInput(e.target.value)}
+                      placeholder={`Type "${hackathon.title}"…`}
+                      className="input-field text-sm border-red-500/40 focus:border-red-500 font-semibold"
+                    />
+                  </div>
+                  <div className="modal-footer">
+                    <button onClick={() => setDeleteStep(0)} className="btn-secondary text-xs px-4 py-2">Cancel</button>
+                    <button
+                      onClick={handleDeleteHackathon}
+                      disabled={confirmInput.trim() !== hackathon.title.trim() || deleting}
+                      className="btn-danger text-xs px-4 py-2 font-bold disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
+                    >
+                      {deleting ? "Purging…" : "DELETE PERMANENTLY"}
+                    </button>
+                  </div>
                 </div>
-
-                <div className="text-center space-y-1">
-                  <h3 className="text-lg font-black text-white">Delete Hackathon?</h3>
-                  <p className="text-xs text-red-400 font-bold uppercase tracking-wider">Step 1 of 2: First Confirmation</p>
-                </div>
-
-                <div className="bg-red-500/10 border border-red-500/30 p-4 rounded-xl text-xs text-zinc-300 space-y-2">
-                  <p className="font-semibold text-white">Are you sure you want to delete <span className="text-red-400">"{hackathon.title}"</span>?</p>
-                  <p className="text-zinc-400">
-                    This will permanently purge this hackathon and all associated registrations, team submissions, leaderboard scores, and judge evaluations.
-                  </p>
-                </div>
-
-                <div className="flex gap-3 justify-end pt-2 border-t border-zinc-800">
-                  <button onClick={() => setDeleteStep(0)} className="btn-secondary text-xs px-4 py-2">
-                    Cancel
-                  </button>
-                  <button
-                    onClick={() => setDeleteStep(2)}
-                    className="btn-danger text-xs px-4 py-2 font-bold"
-                  >
-                    Yes, Proceed to Final Confirm →
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* STEP 2: TYPE TITLE TO CONFIRM */}
-            {deleteStep === 2 && (
-              <div className="space-y-4">
-                <div className="w-12 h-12 rounded-2xl bg-red-600/30 text-red-300 border border-red-500 flex items-center justify-center text-2xl mx-auto shadow-lg shadow-red-500/20">
-                  <HiOutlineTrash />
-                </div>
-
-                <div className="text-center space-y-1">
-                  <h3 className="text-lg font-black text-white">Final Confirmation Required</h3>
-                  <p className="text-xs text-red-400 font-bold uppercase tracking-wider">Step 2 of 2: Permanent Purge</p>
-                </div>
-
-                <div className="space-y-2">
-                  <p className="text-xs text-zinc-300">
-                    To confirm deletion, please type the exact title <strong className="text-amber-400">{hackathon.title}</strong> below:
-                  </p>
-                  <input
-                    type="text"
-                    value={confirmInput}
-                    onChange={e => setConfirmInput(e.target.value)}
-                    placeholder={`Type "${hackathon.title}"...`}
-                    className="input-field text-sm border-red-500/40 focus:border-red-500 font-semibold"
-                  />
-                </div>
-
-                <div className="flex gap-3 justify-end pt-2 border-t border-zinc-800">
-                  <button onClick={() => setDeleteStep(0)} className="btn-secondary text-xs px-4 py-2">
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleDeleteHackathon}
-                    disabled={confirmInput.trim() !== hackathon.title.trim() || deleting}
-                    className="btn-danger text-xs px-4 py-2 font-bold disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
-                  >
-                    {deleting ? "Purging Data..." : "PERMANENTLY DELETE HACKATHON"}
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </DashboardLayout>
   );
 };
