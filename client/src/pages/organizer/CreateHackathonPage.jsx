@@ -8,6 +8,27 @@ import { hackathonAPI } from "../../services/apiServices";
 import toast from "react-hot-toast";
 import { HiOutlinePlus, HiOutlineTrash, HiOutlinePhotograph } from "react-icons/hi";
 
+// Compress banner to max 800x400 JPEG ~40-80KB — no Cloudinary needed
+const compressImage = (file, maxW = 800, maxH = 400, quality = 0.8) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (e) => {
+      const img = new Image();
+      img.src = e.target.result;
+      img.onload = () => {
+        const scale = Math.min(maxW / img.width, maxH / img.height, 1);
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+        canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+      img.onerror = reject;
+    };
+    reader.onerror = reject;
+  });
+
 const schema = z
   .object({
     title: z.string().min(3, "Title must be at least 3 characters"),
@@ -110,21 +131,28 @@ const CreateHackathonPage = () => {
   const onSubmit = async (data) => {
     setSubmitting(true);
     try {
-      const formData = new FormData();
-      Object.entries(data).forEach(([k, v]) => {
-        if (v !== undefined && v !== null) formData.append(k, v);
-      });
+      // Compress banner image on client side, send as JSON field
+      let bannerBase64 = "";
+      if (banner) {
+        try {
+          bannerBase64 = await compressImage(banner, 800, 400, 0.8);
+        } catch (_) {
+          toast.error("Failed to process banner image. Please try again.");
+          setSubmitting(false);
+          return;
+        }
+      }
 
+      // Build a plain object (JSON) — no FormData needed since banner is base64
+      const payload = { ...data };
       const filteredRules = rules.filter((r) => r.trim());
-      formData.append("rules", JSON.stringify(filteredRules));
-
+      payload.rules = JSON.stringify(filteredRules);
       const filteredCriteria = criteria.filter((c) => c.criterion && c.criterion.trim());
-      formData.append("judgingCriteria", JSON.stringify(filteredCriteria));
-      formData.append("isPublished", "true");
+      payload.judgingCriteria = JSON.stringify(filteredCriteria);
+      payload.isPublished = true;
+      if (bannerBase64) payload.bannerBase64 = bannerBase64;
 
-      if (banner) formData.append("bannerImage", banner);
-
-      await hackathonAPI.create(formData);
+      await hackathonAPI.createJSON(payload);
       toast.success("Hackathon created and published! 🎉");
       navigate("/organizer/hackathons");
     } catch (e) {

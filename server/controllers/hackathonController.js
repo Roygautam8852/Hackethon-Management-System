@@ -88,6 +88,20 @@ const createHackathon = asyncHandler(async (req, res) => {
     ? tags.split(",").map(t => t.trim()).filter(Boolean)
     : (Array.isArray(tags) ? tags : []);
 
+  // Determine banner: compressed base64 from client (preferred) or Cloudinary file
+  let bannerImage = "";
+  let bannerImagePublicId = "";
+
+  if (req.body.bannerBase64) {
+    const b64 = req.body.bannerBase64;
+    if (b64.startsWith("data:image/") && b64.length <= 500 * 1024) {
+      bannerImage = b64;
+    }
+  } else if (req.file && req.file.path) {
+    bannerImage = req.file.path;
+    bannerImagePublicId = req.file.filename || "";
+  }
+
   const hackathon = await Hackathon.create({
     title,
     description,
@@ -106,8 +120,8 @@ const createHackathon = asyncHandler(async (req, res) => {
     website: website || "",
     contactEmail: contactEmail || "",
     organizer: req.user._id,
-    bannerImage: req.file ? (req.file.path || "") : "",
-    bannerImagePublicId: req.file ? (req.file.filename || "") : "",
+    bannerImage,
+    bannerImagePublicId,
     isPublished: publishedBool,
     status: initialStatus,
     registrationOpen: publishedBool || initialStatus === "registration_open",
