@@ -20,7 +20,7 @@ const allowedOrigins = [
   process.env.CLIENT_URL,
   "http://localhost:5173",
   "http://localhost:3000",
-  "https://hackathon-management-system.vercel.app",
+  "https://hackethon-management-system.vercel.app",
 ].filter(Boolean);
 
 app.use(
