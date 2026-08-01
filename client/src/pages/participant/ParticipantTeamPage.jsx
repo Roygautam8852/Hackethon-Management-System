@@ -50,6 +50,12 @@ const ParticipantTeamPage = () => {
     }).catch(console.error);
   }, []);
 
+  // Derive selected hackathon object to check deadline
+  const selectedHackathonObj = hackathons.find(h => h._id === selectedHackathon) || null;
+  const isRegDeadlinePassed = selectedHackathonObj?.registrationDeadline
+    ? new Date() > new Date(selectedHackathonObj.registrationDeadline)
+    : false;
+
   useEffect(() => {
     if (!selectedHackathon) return;
     setLoading(true);
@@ -497,6 +503,25 @@ const ParticipantTeamPage = () => {
                   </form>
                 </div>
               )}
+            </motion.div>
+          ) : isRegDeadlinePassed ? (
+            /* Registration Closed — deadline passed */
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="card border-red-500/40 bg-red-500/5 space-y-3 text-center py-8"
+            >
+              <div className="w-14 h-14 rounded-2xl bg-red-500/20 border border-red-500/40 flex items-center justify-center text-3xl mx-auto">🚫</div>
+              <h2 className="text-lg font-extrabold text-red-400">Registration Closed</h2>
+              <p className="text-sm text-red-300 font-semibold">
+                You are not allowed to register or create a team for this hackathon.
+              </p>
+              <p className="text-xs text-zinc-500">
+                The registration deadline for <span className="text-zinc-300 font-semibold">{selectedHackathonObj?.title}</span> has passed
+                {selectedHackathonObj?.registrationDeadline && (
+                  <> (was {new Date(selectedHackathonObj.registrationDeadline).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })})</>  
+                )}.
+              </p>
             </motion.div>
           ) : (
             /* Create Team Form */

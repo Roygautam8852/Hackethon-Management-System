@@ -236,6 +236,7 @@ const ManageHackathonPage = () => {
 
   const pending = registrations.filter(r => r.status === "pending").length;
   const isEndDatePassed = hackathon.endDate ? new Date() >= new Date(hackathon.endDate) : true;
+  const isRegDeadlinePassed = hackathon.registrationDeadline ? new Date() > new Date(hackathon.registrationDeadline) : false;
 
   // Count ALL unique judges — hackathon-level + submission-level combined
   const hackathonJudgeIds = new Set(
@@ -267,9 +268,11 @@ const ManageHackathonPage = () => {
                 } capitalize text-[10px] font-bold`}>
                   {hackathon.status?.replace(/_/g, " ")}
                 </span>
-                {hackathon.registrationOpen && (
+                {isRegDeadlinePassed ? (
+                  <span className="badge badge-danger text-[10px]">Reg Deadline Passed</span>
+                ) : hackathon.registrationOpen ? (
                   <span className="badge badge-success text-[10px]">Reg Open</span>
-                )}
+                ) : null}
               </div>
               <p className="manage-hackathon-meta">
                 {hackathon.mode} · {hackathon.theme}

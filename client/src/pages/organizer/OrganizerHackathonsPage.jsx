@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import { hackathonAPI } from "../../services/apiServices";
 import toast from "react-hot-toast";
-import { format } from "date-fns";
+import { format, isPast } from "date-fns";
 import {
   HiOutlinePlus, HiOutlineExternalLink, HiOutlineCheckCircle, HiOutlineXCircle,
   HiOutlineTrash, HiOutlineExclamation, HiOutlineX,
@@ -111,13 +111,21 @@ const OrganizerHackathonsPage = () => {
 
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-bold text-white text-sm sm:text-base truncate">{h.title}</h3>
-                      <span className={`badge ${
-                        h.status === "registration_open" ? "badge-success" :
-                        h.status === "completed" ? "badge-gray" : "badge-primary"
-                      } text-[9px] font-extrabold uppercase px-2 py-0.5`}>
-                        {h.status === "registration_open" ? "REG OPEN" : h.status?.replace(/_/g, " ")}
-                      </span>
+                    <h3 className="font-bold text-white text-sm sm:text-base truncate">{h.title}</h3>
+                    {(() => {
+                      const deadlinePassed = h.registrationDeadline ? isPast(new Date(h.registrationDeadline)) : false;
+                      if (deadlinePassed && h.status === "registration_open") {
+                        return <span className="badge badge-danger text-[9px] font-extrabold uppercase px-2 py-0.5">Reg Closed</span>;
+                      }
+                      return (
+                        <span className={`badge ${
+                          h.status === "registration_open" ? "badge-success" :
+                          h.status === "completed" ? "badge-gray" : "badge-primary"
+                        } text-[9px] font-extrabold uppercase px-2 py-0.5`}>
+                          {h.status === "registration_open" ? "REG OPEN" : h.status?.replace(/_/g, " ")}
+                        </span>
+                      );
+                    })()}
                     </div>
                     <p className="text-xs text-zinc-400 mt-0.5 truncate">{h.theme} · {h.mode}</p>
                     <p className="text-[11px] text-zinc-500 mt-1 truncate">
@@ -145,7 +153,7 @@ const OrganizerHackathonsPage = () => {
                     title={h.registrationOpen ? "Close Registration" : "Open Registration"}
                   >
                     {h.registrationOpen ? <HiOutlineXCircle className="text-sm" /> : <HiOutlineCheckCircle className="text-sm" />}
-                    <span>{h.registrationOpen ? "Reg Open" : "Reg Closed"}</span>
+                    <span>{h.registrationOpen ? (h.registrationDeadline && isPast(new Date(h.registrationDeadline)) ? "Reg Closed (Deadline)" : "Reg Open") : "Reg Closed"}</span>
                   </button>
 
                   <Link
