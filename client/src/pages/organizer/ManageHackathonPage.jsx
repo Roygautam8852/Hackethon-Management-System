@@ -261,18 +261,22 @@ const ManageHackathonPage = () => {
             <div className="manage-title-block">
               <div className="manage-title-badges">
                 <h1 className="manage-hackathon-title">{hackathon.title}</h1>
-                <span className={`badge ${
-                  hackathon.status === "completed" ? "badge-success" :
-                  hackathon.status === "registration_open" ? "badge-primary" :
-                  "badge-warning"
-                } capitalize text-[10px] font-bold`}>
-                  {hackathon.status?.replace(/_/g, " ")}
-                </span>
-                {isRegDeadlinePassed ? (
-                  <span className="badge badge-danger text-[10px]">Reg Deadline Passed</span>
-                ) : hackathon.registrationOpen ? (
-                  <span className="badge badge-success text-[10px]">Reg Open</span>
-                ) : null}
+                {(() => {
+                  const effectiveStatus =
+                    isRegDeadlinePassed && hackathon.status === "registration_open"
+                      ? "registration_closed"
+                      : hackathon.status;
+                  const badgeClass =
+                    effectiveStatus === "completed" ? "badge-success" :
+                    effectiveStatus === "registration_open" ? "badge-primary" :
+                    effectiveStatus === "registration_closed" ? "badge-danger" :
+                    "badge-warning";
+                  return (
+                    <span className={`badge ${badgeClass} capitalize text-[10px] font-bold`}>
+                      {effectiveStatus?.replace(/_/g, " ")}
+                    </span>
+                  );
+                })()}
               </div>
               <p className="manage-hackathon-meta">
                 {hackathon.mode} · {hackathon.theme}

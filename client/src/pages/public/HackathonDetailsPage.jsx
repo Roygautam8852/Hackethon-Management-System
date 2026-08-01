@@ -16,7 +16,7 @@ import { RiTrophyLine } from "react-icons/ri";
 const statusColors = {
   upcoming: "badge-info",
   registration_open: "badge-success",
-  registration_closed: "badge-warning",
+  registration_closed: "badge-danger",
   ongoing: "badge-primary",
   completed: "badge-gray",
 };
@@ -90,9 +90,17 @@ const HackathonDetailsPage = () => {
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent" />
           <div className="absolute bottom-0 left-0 right-0 max-w-5xl mx-auto px-4 pb-6">
             <div className="flex flex-wrap gap-2 mb-3">
-              <span className={`badge ${statusColors[h.status] || "badge-gray"}`}>
-                {h.status?.replace("_", " ")}
-              </span>
+              {(() => {
+                const effectiveStatus =
+                  regDeadlinePast && h.status === "registration_open"
+                    ? "registration_closed"
+                    : h.status;
+                return (
+                  <span className={`badge ${statusColors[effectiveStatus] || "badge-gray"}`}>
+                    {effectiveStatus?.replace(/_/g, " ")}
+                  </span>
+                );
+              })()}
               <span className="badge badge-gray capitalize">{h.mode}</span>
               {h.theme && <span className="badge badge-primary">{h.theme}</span>}
             </div>
