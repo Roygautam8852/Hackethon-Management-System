@@ -51,6 +51,11 @@ const ManageHackathonPage = () => {
   // Mobile action menu
   const [mobileActionsOpen, setMobileActionsOpen] = useState(false);
 
+  // Reopen Registration Modal
+  const [reopenModal, setReopenModal] = useState(false);
+  const [reopenDates, setReopenDates] = useState({ startDate: "", endDate: "", registrationDeadline: "" });
+  const [reopening, setReopening] = useState(false);
+
   const handleDeleteHackathon = async () => {
     if (!hackathon) return;
     if (confirmInput.trim() !== hackathon.title.trim()) {
@@ -198,6 +203,46 @@ const ManageHackathonPage = () => {
     } catch (e) { toast.error(e.response?.data?.message || "Failed"); }
   };
 
+  /* ── Reopen registration with new dates ── */
+  const handleReopenReg = async (e) => {
+    e.preventDefault();
+    const { startDate, endDate, registrationDeadline } = reopenDates;
+    if (!startDate || !endDate || !registrationDeadline) {
+      toast.error("Please fill in all date fields");
+      return;
+    }
+    if (new Date(registrationDeadline) >= new Date(startDate)) {
+      toast.error("Registration deadline must be before the hackathon start date");
+      return;
+    }
+    if (new Date(startDate) >= new Date(endDate)) {
+      toast.error("Start date must be before the end date");
+      return;
+    }
+    if (new Date(registrationDeadline) <= new Date()) {
+      toast.error("New registration deadline must be in the future");
+      return;
+    }
+    setReopening(true);
+    try {
+      await hackathonAPI.updateJSON(id, {
+        startDate,
+        endDate,
+        registrationDeadline,
+        registrationOpen: true,
+        status: "registration_open",
+      });
+      toast.success("Registration reopened with new dates! 🎉");
+      setReopenModal(false);
+      setReopenDates({ startDate: "", endDate: "", registrationDeadline: "" });
+      fetchData();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to reopen registration");
+    } finally {
+      setReopening(false);
+    }
+  };
+
   // Compute unique judge count (hackathon-level + submission-level)
   const allAssignedJudgeIds = new Set(
     (hackathon?.assignedJudges || []).map(j => (typeof j === "string" ? j : j._id))
@@ -286,13 +331,27 @@ const ManageHackathonPage = () => {
 
             {/* Desktop actions */}
             <div className="manage-actions-desktop">
-              <button
-                onClick={handleToggleReg}
-                className={`manage-action-btn ${hackathon.registrationOpen ? "manage-action-danger" : "manage-action-success"}`}
-              >
-                {hackathon.registrationOpen ? <HiOutlineXCircle /> : <HiOutlineCheckCircle />}
-                {hackathon.registrationOpen ? "Close Reg" : "Open Reg"}
-              </button>
+              {isRegDeadlinePassed ? (
+                // Deadline passed — show Reopen button that triggers the date modal
+                <button
+                  onClick={() => {
+                    setReopenDates({ startDate: "", endDate: "", registrationDeadline: "" });
+                    setReopenModal(true);
+                  }}
+                  className="manage-action-btn manage-action-success"
+                >
+                  <HiOutlineCheckCircle /> Reopen Reg
+                </button>
+              ) : (
+                // Normal toggle
+                <button
+                  onClick={handleToggleReg}
+                  className={`manage-action-btn ${hackathon.registrationOpen ? "manage-action-danger" : "manage-action-success"}`}
+                >
+                  {hackathon.registrationOpen ? <HiOutlineXCircle /> : <HiOutlineCheckCircle />}
+                  {hackathon.registrationOpen ? "Close Reg" : "Open Reg"}
+                </button>
+              )}
               <Link
                 to={`/hackathons/${hackathon._id}`}
                 target="_blank"
@@ -339,13 +398,22 @@ const ManageHackathonPage = () => {
                 exit={{ opacity: 0, height: 0 }}
                 className="manage-mobile-actions-panel"
               >
-                <button
-                  onClick={() => { handleToggleReg(); setMobileActionsOpen(false); }}
-                  className={`manage-mobile-action-item ${hackathon.registrationOpen ? "text-red-400" : "text-emerald-400"}`}
-                >
-                  {hackathon.registrationOpen ? <HiOutlineXCircle className="text-lg" /> : <HiOutlineCheckCircle className="text-lg" />}
-                  {hackathon.registrationOpen ? "Close Registration" : "Open Registration"}
-                </button>
+                {isRegDeadlinePassed ? (
+                  <button
+                    onClick={() => { setReopenDates({ startDate: "", endDate: "", registrationDeadline: "" }); setReopenModal(true); setMobileActionsOpen(false); }}
+                    className="manage-mobile-action-item text-emerald-400"
+                  >
+                    <HiOutlineCheckCircle className="text-lg" /> Reopen Registration
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => { handleToggleReg(); setMobileActionsOpen(false); }}
+                    className={`manage-mobile-action-item ${hackathon.registrationOpen ? "text-red-400" : "text-emerald-400"}`}
+                  >
+                    {hackathon.registrationOpen ? <HiOutlineXCircle className="text-lg" /> : <HiOutlineCheckCircle className="text-lg" />}
+                    {hackathon.registrationOpen ? "Close Registration" : "Open Registration"}
+                  </button>
+                )}
                 <Link
                   to={`/hackathons/${hackathon._id}`}
                   target="_blank"
@@ -983,6 +1051,118 @@ const ManageHackathonPage = () => {
                   </div>
                 </div>
               )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── REOPEN REGISTRATION MODAL ── */}
+      <AnimatePresence>
+        {reopenModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
+            onClick={(e) => { if (e.target === e.currentTarget) setReopenModal(false); }}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              className="bg-[#111113] border border-emerald-500/30 rounded-2xl p-6 w-full max-w-md shadow-2xl space-y-5 relative"
+            >
+              <button
+                onClick={() => setReopenModal(false)}
+                className="absolute top-4 right-4 text-zinc-500 hover:text-white p-1 transition-colors"
+              >
+                <HiOutlineX />
+              </button>
+
+              {/* Header */}
+              <div className="space-y-1">
+                <div className="w-11 h-11 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-xl text-emerald-400 mb-3">
+                  <HiOutlineCheckCircle />
+                </div>
+                <h3 className="text-base font-black text-white">Reopen Registration</h3>
+                <p className="text-xs text-zinc-400">
+                  The previous deadline has passed. Set new dates to reopen registration for <span className="text-zinc-200 font-semibold">{hackathon.title}</span>.
+                </p>
+              </div>
+
+              <form onSubmit={handleReopenReg} className="space-y-4 border-t border-zinc-800 pt-4">
+                {/* New Registration Deadline */}
+                <div>
+                  <label className="input-label text-xs mb-1 flex items-center gap-1">
+                    📅 New Registration Deadline <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={reopenDates.registrationDeadline}
+                    onChange={e => setReopenDates(d => ({ ...d, registrationDeadline: e.target.value }))}
+                    className="input-field bg-[#0d0d0f] border-zinc-800 focus:border-emerald-500/60 text-xs"
+                    required
+                  />
+                  <p className="text-[10px] text-zinc-500 mt-1">Must be in the future and before the hackathon start date.</p>
+                </div>
+
+                {/* New Hackathon Start Date */}
+                <div>
+                  <label className="input-label text-xs mb-1 flex items-center gap-1">
+                    🚀 New Hackathon Start Date <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={reopenDates.startDate}
+                    onChange={e => setReopenDates(d => ({ ...d, startDate: e.target.value }))}
+                    className="input-field bg-[#0d0d0f] border-zinc-800 focus:border-emerald-500/60 text-xs"
+                    required
+                  />
+                </div>
+
+                {/* New Hackathon End Date */}
+                <div>
+                  <label className="input-label text-xs mb-1 flex items-center gap-1">
+                    🏁 New Hackathon End Date <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={reopenDates.endDate}
+                    onChange={e => setReopenDates(d => ({ ...d, endDate: e.target.value }))}
+                    className="input-field bg-[#0d0d0f] border-zinc-800 focus:border-emerald-500/60 text-xs"
+                    required
+                  />
+                </div>
+
+                {/* Info box */}
+                <div className="bg-emerald-500/8 border border-emerald-500/25 rounded-xl p-3 text-xs text-zinc-300 space-y-1">
+                  <p className="font-semibold text-emerald-300">What happens after submitting?</p>
+                  <ul className="text-zinc-400 space-y-0.5 list-disc list-inside">
+                    <li>Registration status → <strong className="text-emerald-300">Open</strong></li>
+                    <li>Status badge → <strong className="text-emerald-300">Registration Open</strong></li>
+                    <li>Participants can create teams again</li>
+                    <li>All dates update immediately across all pages</li>
+                  </ul>
+                </div>
+
+                <div className="flex gap-3 justify-end pt-1 border-t border-zinc-800">
+                  <button
+                    type="button"
+                    onClick={() => setReopenModal(false)}
+                    className="btn-secondary text-xs px-4 py-2"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={reopening || !reopenDates.startDate || !reopenDates.endDate || !reopenDates.registrationDeadline}
+                    className="btn-primary text-xs px-4 py-2 font-bold disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
+                  >
+                    <HiOutlineCheckCircle />
+                    {reopening ? "Reopening..." : "Reopen Registration"}
+                  </button>
+                </div>
+              </form>
             </motion.div>
           </motion.div>
         )}
